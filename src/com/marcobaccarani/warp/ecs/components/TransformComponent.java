@@ -1,10 +1,10 @@
-package com.marcobaccarani.src.warp.ecs.components;
+package com.marcobaccarani.warp.ecs.components;
 
 import java.util.ArrayList;
 
 import com.badlogic.gdx.math.Matrix3;
 import com.badlogic.gdx.math.Vector2;
-import com.marcobaccarani.src.warp.ecs.Component;
+import com.marcobaccarani.warp.ecs.Component;
 
 // TODO: vedere se ottimizzare il componente in modo che se non ha figli o padri non faccia i calcoli sulle matrici ma utilizzi direttamente le posizioni.
 // 		 Questo perche normalmente la maggior parte delle entità non saranno annidate ma elementi singoli.

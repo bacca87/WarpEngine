@@ -1,4 +1,4 @@
-package com.marcobaccarani.src.warp.ecs;
+package com.marcobaccarani.warp.ecs;
 
 import java.util.Collection;
 import java.util.HashMap;

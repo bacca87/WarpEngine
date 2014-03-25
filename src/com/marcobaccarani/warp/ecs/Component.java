@@ -1,4 +1,4 @@
-package com.marcobaccarani.src.warp.ecs;
+package com.marcobaccarani.warp.ecs;
 
 public abstract class Component {
 	protected Entity entity;	

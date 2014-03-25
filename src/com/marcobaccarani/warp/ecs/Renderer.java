@@ -1,4 +1,4 @@
-package com.marcobaccarani.src.warp.ecs;
+package com.marcobaccarani.warp.ecs;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 

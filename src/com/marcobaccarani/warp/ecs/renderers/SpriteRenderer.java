@@ -1,9 +1,9 @@
-package com.marcobaccarani.src.warp.ecs.renderers;
+package com.marcobaccarani.warp.ecs.renderers;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.marcobaccarani.src.warp.ecs.Renderer;
-import com.marcobaccarani.src.warp.ecs.components.TransformComponent;
+import com.marcobaccarani.warp.ecs.Renderer;
+import com.marcobaccarani.warp.ecs.components.TransformComponent;
 
 public class SpriteRenderer extends Renderer {
 	private Sprite sprite;

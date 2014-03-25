@@ -1,4 +1,4 @@
-package com.marcobaccarani.src.warp.ecs.externals;
+package com.marcobaccarani.warp.ecs.externals;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.MathUtils;
@@ -13,10 +13,10 @@ import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.utils.Array;
-import com.marcobaccarani.src.warp.ecs.Component;
-import com.marcobaccarani.src.warp.ecs.Entity;
-import com.marcobaccarani.src.warp.ecs.components.RigidBodyComponent;
-import com.marcobaccarani.src.warp.ecs.components.TransformComponent;
+import com.marcobaccarani.warp.ecs.Component;
+import com.marcobaccarani.warp.ecs.Entity;
+import com.marcobaccarani.warp.ecs.components.RigidBodyComponent;
+import com.marcobaccarani.warp.ecs.components.TransformComponent;
 
 public class B2DManager implements ContactListener {
 	// pixel to meter ratio

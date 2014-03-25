@@ -1,8 +1,8 @@
-package com.marcobaccarani.src.warp.ecs.components;
+package com.marcobaccarani.warp.ecs.components;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
-import com.marcobaccarani.src.warp.ecs.Component;
+import com.marcobaccarani.warp.ecs.Component;
 
 public class RigidBodyComponent extends Component {
 	private Body body;
