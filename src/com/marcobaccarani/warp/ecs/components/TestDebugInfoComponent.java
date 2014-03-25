@@ -13,12 +13,13 @@ public class TestDebugInfoComponent extends Component {
 	private GUIComponent gui;
 	private Label fpsLabel;
 	private Label entitiesLabel;
+	private BitmapFont font;
 	
 	@Override
 	protected void initialize() {
 		gui = entity.getComponent(GUIComponent.class);
 		
-		BitmapFont font = new BitmapFont();		
+		font = new BitmapFont();		
 		LabelStyle style = new LabelStyle(font, Color.WHITE);
 		
 		fpsLabel = new Label("FPS: 0", style);
@@ -42,5 +43,10 @@ public class TestDebugInfoComponent extends Component {
 	protected void update(float deltaTime) {
 		entitiesLabel.setText("Entities: " + entity.getSystem().getEntitiesCount());
 		fpsLabel.setText("FPS: " + Gdx.graphics.getFramesPerSecond());
+	}
+	
+	@Override
+	protected void removed() {
+		font.dispose();
 	}
 }

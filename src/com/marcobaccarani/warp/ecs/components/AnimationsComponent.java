@@ -52,12 +52,12 @@ public class AnimationsComponent extends Component {
 	}
 	
 	@Override
-	public void initialize() {
+	protected void initialize() {
 		spriteRenderer = entity.getRenderer(SpriteRenderer.class);
 	}
 	
 	@Override	
-	public void update(float deltaTime) {
+	protected void update(float deltaTime) {
 		if(spriteRenderer == null || activeAnimation == null || spriteRenderer.getSprite() == null)
 			return;
 	

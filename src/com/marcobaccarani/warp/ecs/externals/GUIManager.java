@@ -3,8 +3,9 @@ package com.marcobaccarani.warp.ecs.externals;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.utils.Disposable;
 
-public class GUIManager {
+public class GUIManager implements Disposable {
 	private Stage stage;
 	
 	public GUIManager(InputMultiplexer input) {
@@ -28,6 +29,7 @@ public class GUIManager {
 		stage.addActor(actor);
 	}
 	
+	@Override
 	public void dispose() {
 		stage.dispose();
 	}

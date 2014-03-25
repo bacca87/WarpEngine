@@ -13,12 +13,13 @@ import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Disposable;
 import com.marcobaccarani.warp.ecs.Component;
 import com.marcobaccarani.warp.ecs.Entity;
 import com.marcobaccarani.warp.ecs.components.RigidBodyComponent;
 import com.marcobaccarani.warp.ecs.components.TransformComponent;
 
-public class B2DManager implements ContactListener {
+public class B2DManager implements ContactListener, Disposable {
 	// pixel to meter ratio
 	private float box2d_to_world = 1;
 	@SuppressWarnings("unused")
@@ -87,6 +88,11 @@ public class B2DManager implements ContactListener {
 	
 	public void render(OrthographicCamera camera) {
 		debugRenderer.render(physicsWorld, camera.combined.cpy().scl(box2d_to_world));
+	}
+	
+	@Override
+	public void dispose() {
+		physicsWorld.dispose();
 	}
 	
 	/***********************************/
