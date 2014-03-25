@@ -1,28 +1,41 @@
 package com.marcobaccarani.warp.ecs.externals;
 
+import java.util.Iterator;
+
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.maps.MapObject;
+import com.badlogic.gdx.maps.MapObjects;
+import com.badlogic.gdx.maps.objects.PolygonMapObject;
+import com.badlogic.gdx.maps.objects.PolylineMapObject;
+import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Polygon;
+import com.badlogic.gdx.math.Polyline;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
+import com.badlogic.gdx.physics.box2d.ChainShape;
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.Manifold;
+import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.marcobaccarani.warp.ecs.Component;
 import com.marcobaccarani.warp.ecs.Entity;
+import com.marcobaccarani.warp.ecs.EntityList;
 import com.marcobaccarani.warp.ecs.components.RigidBodyComponent;
 import com.marcobaccarani.warp.ecs.components.TransformComponent;
+import com.marcobaccarani.warp.utils.Utility;
 
 public class B2DManager implements ContactListener, Disposable {
 	// pixel to meter ratio
 	private float box2d_to_world = 1;
-	@SuppressWarnings("unused")
 	private float world_to_box2d = 1;
 	
 	// physic simulation
@@ -50,17 +63,41 @@ public class B2DManager implements ContactListener, Disposable {
 		physicsWorld.setContactListener(this);
 	}
 	
-	public void setPixelToMeterRatio(float pixels) {
+	public float getPixelToMeter() {
+		return box2d_to_world;
+	}
+	
+	public void setPixelToMeter(float pixels) {
 		box2d_to_world = pixels;
 		world_to_box2d = 1 / pixels;
+	}
+	
+	public float getBox2DToWorldRatio() {
+		return box2d_to_world;
+	}
+	
+	public float getWorldToBox2DRatio() {
+		return world_to_box2d;
+	}
+		
+	public float getTimeStep() {
+		return box2d_timestep;
 	}
 	
 	public void setTimeStep(float box2d_timestep) {
 		this.box2d_timestep = box2d_timestep;
 	}
 	
+	public int getVelocityIterations() {
+		return box2d_velocity_iterations;
+	}
+	
 	public void setVelocityIterations(int box2d_velocity_iterations) {
 		this.box2d_velocity_iterations = box2d_velocity_iterations;
+	}
+	
+	public int getPositionIterations() {
+		return box2d_position_iterations;
 	}
 	
 	public void setPositionIterations(int box2d_position_iterations) {
@@ -251,5 +288,109 @@ public class B2DManager implements ContactListener, Disposable {
 	
 	public Body createBody(BodyDef bodyDef) {
 		return physicsWorld.createBody(bodyDef);
+	}
+	
+	/***********************************/
+	/* 		  		UTILS			   */
+	/***********************************/
+	
+	public EntityList createMapCollisions(MapObjects collisionObjects) {
+		EntityList list = new EntityList();
+		Iterator<MapObject> mapObjectIterator = collisionObjects.iterator();
+		
+		while(mapObjectIterator.hasNext()) {
+			Entity e = new Entity();
+			MapObject obj = mapObjectIterator.next();
+			
+			if(obj instanceof RectangleMapObject) {
+				RectangleMapObject rectObj = (RectangleMapObject)obj;
+				Rectangle rect = rectObj.getRectangle();
+				
+				// First we create a body definition
+				BodyDef bodyDef = new BodyDef();
+				bodyDef.type = BodyType.StaticBody;
+				// Set our body's starting position in the world
+				bodyDef.position.set((rect.x+rect.width/2) * world_to_box2d, (rect.y+rect.height/2) * world_to_box2d);
+				
+				// Create our body in the world using our body definition
+				Body body = createBody(bodyDef);
+				body.setUserData(e);
+				
+				// Create a rectangle shape
+				PolygonShape b2dRect = new PolygonShape();
+				b2dRect.setAsBox((rect.width/2) * world_to_box2d, (rect.height/2) * world_to_box2d);
+
+				// Create our fixture and attach it to the body
+				body.createFixture(b2dRect, 0.0f);
+
+				// Remember to dispose of any shapes after you're done with them!
+				// BodyDef and FixtureDef don't need disposing, but shapes do.
+				b2dRect.dispose();
+				
+				e.addComponent(new RigidBodyComponent(body));
+				
+				list.add(e);
+			}
+			else if(obj instanceof PolygonMapObject) {
+				PolygonMapObject polygonObj = (PolygonMapObject)obj;
+				Polygon polygon = polygonObj.getPolygon();
+								
+				// First we create a body definition
+				BodyDef bodyDef = new BodyDef();
+				bodyDef.type = BodyType.StaticBody;
+				// Set our body's starting position in the world
+				bodyDef.position.set(polygon.getOriginX() * world_to_box2d, polygon.getOriginY() * world_to_box2d);
+				
+				// Create our body in the world using our body definition
+				Body body = createBody(bodyDef);
+				body.setUserData(e);
+				
+				// Create a polygon shape						
+				ChainShape b2dChain = new ChainShape();
+				b2dChain.createLoop(Utility.mulFloatArray(polygon.getTransformedVertices(), world_to_box2d));
+				
+				// Create our fixture and attach it to the body
+				body.createFixture(b2dChain, 0.0f);
+
+				// Remember to dispose of any shapes after you're done with them!
+				// BodyDef and FixtureDef don't need disposing, but shapes do.
+				b2dChain.dispose();
+				
+				e.addComponent(new RigidBodyComponent(body));				
+								
+				list.add(e);
+			}
+			else if(obj instanceof PolylineMapObject) {
+				PolylineMapObject lineObj = (PolylineMapObject)obj;
+				Polyline line = lineObj.getPolyline();
+				
+				// First we create a body definition
+				BodyDef bodyDef = new BodyDef();
+				bodyDef.type = BodyType.StaticBody;
+				// Set our body's starting position in the world
+				bodyDef.position.set(line.getOriginX() * world_to_box2d, line.getOriginY() * world_to_box2d);
+				
+				// Create our body in the world using our body definition
+				Body body = createBody(bodyDef);
+				body.setUserData(e);
+				
+				// Create a polygon shape						
+				ChainShape b2dChain = new ChainShape();
+				b2dChain.createChain(Utility.mulFloatArray(line.getTransformedVertices(), world_to_box2d));
+				
+				// Create our fixture and attach it to the body
+				body.createFixture(b2dChain, 0.0f);
+
+				// Remember to dispose of any shapes after you're done with them!
+				// BodyDef and FixtureDef don't need disposing, but shapes do.
+				b2dChain.dispose();
+				
+				e.addComponent(new RigidBodyComponent(body));	
+				
+				list.add(e);
+			}
+		}
+		
+		return list;
 	}
 }
