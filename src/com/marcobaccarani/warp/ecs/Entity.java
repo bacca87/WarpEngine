@@ -18,8 +18,12 @@ public class Entity {
 	private Renderer renderer;
 	
 	public Entity() {
+		this("Entity");
+	}
+	
+	public Entity(String name) {
 		components = new HashMap<Class<? extends Component>, Component>();
-		name = "Entity";
+		this.name = name;
 	}
 	
 	public System getSystem() {
@@ -43,6 +47,9 @@ public class Entity {
 	}
 
 	public void setName(String name) {
+		if(name == null)
+			throw new IllegalArgumentException("the entity name can't be null!");
+		
 		this.name = name;
 	}
 	

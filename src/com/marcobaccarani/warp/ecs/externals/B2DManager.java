@@ -294,13 +294,16 @@ public class B2DManager implements ContactListener, Disposable {
 	/* 		  		UTILS			   */
 	/***********************************/
 	
-	public EntityList createMapCollisions(MapObjects collisionObjects) {
+	public EntityList createStaticMapObjects(MapObjects objects, boolean sensors) {
 		EntityList list = new EntityList();
-		Iterator<MapObject> mapObjectIterator = collisionObjects.iterator();
+		Iterator<MapObject> mapObjectIterator = objects.iterator();
 		
 		while(mapObjectIterator.hasNext()) {
-			Entity e = new Entity();
 			MapObject obj = mapObjectIterator.next();
+			Entity e = new Entity();
+			
+			if(obj.getName() != null)
+				e.setName(obj.getName());
 			
 			if(obj instanceof RectangleMapObject) {
 				RectangleMapObject rectObj = (RectangleMapObject)obj;
@@ -310,7 +313,7 @@ public class B2DManager implements ContactListener, Disposable {
 				BodyDef bodyDef = new BodyDef();
 				bodyDef.type = BodyType.StaticBody;
 				// Set our body's starting position in the world
-				bodyDef.position.set((rect.x+rect.width/2) * world_to_box2d, (rect.y+rect.height/2) * world_to_box2d);
+				rect.getCenter(bodyDef.position).scl(world_to_box2d);
 				
 				// Create our body in the world using our body definition
 				Body body = createBody(bodyDef);
@@ -321,7 +324,10 @@ public class B2DManager implements ContactListener, Disposable {
 				b2dRect.setAsBox((rect.width/2) * world_to_box2d, (rect.height/2) * world_to_box2d);
 
 				// Create our fixture and attach it to the body
-				body.createFixture(b2dRect, 0.0f);
+				if(sensors)
+					body.createFixture(b2dRect, 0.0f).setSensor(true);
+				else
+					body.createFixture(b2dRect, 0.0f).setSensor(false);
 
 				// Remember to dispose of any shapes after you're done with them!
 				// BodyDef and FixtureDef don't need disposing, but shapes do.
@@ -339,7 +345,7 @@ public class B2DManager implements ContactListener, Disposable {
 				BodyDef bodyDef = new BodyDef();
 				bodyDef.type = BodyType.StaticBody;
 				// Set our body's starting position in the world
-				bodyDef.position.set(polygon.getOriginX() * world_to_box2d, polygon.getOriginY() * world_to_box2d);
+				bodyDef.position.set(polygon.getOriginX(), polygon.getOriginY()).scl(world_to_box2d);
 				
 				// Create our body in the world using our body definition
 				Body body = createBody(bodyDef);
@@ -350,8 +356,11 @@ public class B2DManager implements ContactListener, Disposable {
 				b2dChain.createLoop(Utility.mulFloatArray(polygon.getTransformedVertices(), world_to_box2d));
 				
 				// Create our fixture and attach it to the body
-				body.createFixture(b2dChain, 0.0f);
-
+				if(sensors)
+					body.createFixture(b2dChain, 0.0f).setSensor(true);
+				else
+					body.createFixture(b2dChain, 0.0f).setSensor(false);
+				
 				// Remember to dispose of any shapes after you're done with them!
 				// BodyDef and FixtureDef don't need disposing, but shapes do.
 				b2dChain.dispose();
@@ -368,7 +377,7 @@ public class B2DManager implements ContactListener, Disposable {
 				BodyDef bodyDef = new BodyDef();
 				bodyDef.type = BodyType.StaticBody;
 				// Set our body's starting position in the world
-				bodyDef.position.set(line.getOriginX() * world_to_box2d, line.getOriginY() * world_to_box2d);
+				bodyDef.position.set(line.getOriginX(), line.getOriginY()).scl(world_to_box2d);
 				
 				// Create our body in the world using our body definition
 				Body body = createBody(bodyDef);
@@ -379,7 +388,10 @@ public class B2DManager implements ContactListener, Disposable {
 				b2dChain.createChain(Utility.mulFloatArray(line.getTransformedVertices(), world_to_box2d));
 				
 				// Create our fixture and attach it to the body
-				body.createFixture(b2dChain, 0.0f);
+				if(sensors)
+					body.createFixture(b2dChain, 0.0f).setSensor(true);
+				else
+					body.createFixture(b2dChain, 0.0f).setSensor(false);
 
 				// Remember to dispose of any shapes after you're done with them!
 				// BodyDef and FixtureDef don't need disposing, but shapes do.
