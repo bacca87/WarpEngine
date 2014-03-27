@@ -229,19 +229,30 @@ public class B2DManager implements ContactListener, Disposable {
 	}
 
 	@Override
-	public void endContact(Contact contact) {
-		Entity a = (Entity) contact.getFixtureA().getBody().getUserData();
-		Entity b = (Entity) contact.getFixtureB().getBody().getUserData();
-				
-		for(Component component : a.getComponents()) {
-			if(component instanceof B2DContactListener) {
-				((B2DContactListener)component).endContact(b, contact);
+	public void endContact(Contact contact) {		
+		Entity a = null; 
+		Entity b = null; 
+		
+		// When a body is destroyed endContact is called and the contact fixture could be null
+		if(contact.getFixtureA() != null) 
+			a = (Entity) contact.getFixtureA().getBody().getUserData();	
+		
+		if(contact.getFixtureB() != null)
+			b = (Entity) contact.getFixtureB().getBody().getUserData();
+		
+		if(a != null) {
+			for(Component component : a.getComponents()) {
+				if(component instanceof B2DContactListener) {
+					((B2DContactListener)component).endContact(b, contact);
+				}
 			}
 		}
 		
-		for(Component component : b.getComponents()) {
-			if(component instanceof B2DContactListener) {
-				((B2DContactListener)component).endContact(a, contact);
+		if(b != null) {
+			for(Component component : b.getComponents()) {
+				if(component instanceof B2DContactListener) {
+					((B2DContactListener)component).endContact(a, contact);
+				}
 			}
 		}
 	}

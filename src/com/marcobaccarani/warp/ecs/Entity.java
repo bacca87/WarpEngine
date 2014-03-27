@@ -94,6 +94,10 @@ public class Entity {
 		return components.values();
 	}
 	
+	public void destroy() {
+		system.removeEntity(this);
+	}
+	
 	protected void initialize() {
 		for(Component component : components.values()) {
 			component.initialize();
