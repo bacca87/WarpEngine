@@ -12,6 +12,7 @@ public class Entity {
 	private String name;
 	private int tag;
 	private int layerId;
+	private boolean active;
 	
 	private Map<Class<? extends Component>, Component> components;	
 	
@@ -24,8 +25,24 @@ public class Entity {
 	public Entity(String name) {
 		components = new HashMap<Class<? extends Component>, Component>();
 		this.name = name;
+		active = true;
 	}
 	
+	public boolean isActive() {
+		return active;
+	}
+
+	public void setActive(boolean active) {
+		this.active = active;
+		
+		for(Component component : components.values()) {			
+			component.setEnabled(isActive());
+		}
+		
+		if(renderer != null)
+			renderer.setEnabled(isActive());
+	}
+
 	public System getSystem() {
 		return system;
 	}

@@ -18,16 +18,29 @@ public class RigidBodyComponent extends Component {
 	}
 
 	public Body getBody() {
-		return body;
+		return body;		
 	}
 	
 	@Override
 	protected void initialize() {
-		lastPosition.set(body.getPosition());
+		lastPosition.set(body.getPosition());		
+	}
+	
+	@Override
+	protected void enabled() {
+		if(!world.isLocked())
+			body.setActive(true);
+	}
+	
+	@Override
+	protected void disabled() {
+		if(!world.isLocked())
+			body.setActive(false);
 	}
 	
 	@Override
 	protected void removed() {
-		world.destroyBody(body);
+		if(!world.isLocked())
+			world.destroyBody(body);
 	}
 }

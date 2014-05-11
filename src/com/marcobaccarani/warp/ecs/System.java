@@ -106,7 +106,8 @@ public class System implements Disposable {
 		// update entities
 		for(EntityList entities : layers) {
 			for(Entity entity : entities) {
-				entity.update(deltaTime);
+				if(entity.isActive())
+					entity.update(deltaTime);
 			}
 		}
 		
@@ -116,7 +117,8 @@ public class System implements Disposable {
 	public void render(SpriteBatch batch) {
 		for(EntityList entities : layers) {
 			for(Entity entity : entities) {
-				entity.render(batch);
+				if(entity.isActive())
+					entity.render(batch);
 			}
 		}		
 	}
@@ -125,7 +127,8 @@ public class System implements Disposable {
 		for(int id : layersIDs) {
 			if(layers[id].size() > 0) {
 				for(Entity entity : layers[id]) {
-					entity.render(batch);
+					if(entity.isActive())
+						entity.render(batch);
 				}
 			}
 		}		
