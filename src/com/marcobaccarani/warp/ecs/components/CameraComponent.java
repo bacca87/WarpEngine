@@ -1,8 +1,8 @@
-package com.marcobaccarani.src.warp.ecs.components;
+package com.marcobaccarani.warp.ecs.components;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.marcobaccarani.src.warp.ecs.Component;
+import com.marcobaccarani.warp.ecs.Component;
 
 public class CameraComponent extends Component {
 	private OrthographicCamera camera;

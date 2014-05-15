@@ -1,4 +1,4 @@
-package com.marcobaccarani.src.warp.ecs.components;
+package com.marcobaccarani.warp.ecs.components;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
@@ -7,18 +7,19 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
-import com.marcobaccarani.src.warp.ecs.Component;
+import com.marcobaccarani.warp.ecs.Component;
 
 public class TestDebugInfoComponent extends Component {
 	private GUIComponent gui;
 	private Label fpsLabel;
 	private Label entitiesLabel;
+	private BitmapFont font;
 	
 	@Override
 	protected void initialize() {
 		gui = entity.getComponent(GUIComponent.class);
 		
-		BitmapFont font = new BitmapFont();		
+		font = new BitmapFont();		
 		LabelStyle style = new LabelStyle(font, Color.WHITE);
 		
 		fpsLabel = new Label("FPS: 0", style);
@@ -42,5 +43,10 @@ public class TestDebugInfoComponent extends Component {
 	protected void update(float deltaTime) {
 		entitiesLabel.setText("Entities: " + entity.getSystem().getEntitiesCount());
 		fpsLabel.setText("FPS: " + Gdx.graphics.getFramesPerSecond());
+	}
+	
+	@Override
+	protected void removed() {
+		font.dispose();
 	}
 }

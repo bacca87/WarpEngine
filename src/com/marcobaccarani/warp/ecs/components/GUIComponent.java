@@ -1,8 +1,8 @@
-package com.marcobaccarani.src.warp.ecs.components;
+package com.marcobaccarani.warp.ecs.components;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.marcobaccarani.src.warp.ecs.Component;
-import com.marcobaccarani.src.warp.ecs.externals.GUIManager;
+import com.marcobaccarani.warp.ecs.Component;
+import com.marcobaccarani.warp.ecs.externals.GUIManager;
 
 public class GUIComponent extends Component {
 	private GUIManager gui;

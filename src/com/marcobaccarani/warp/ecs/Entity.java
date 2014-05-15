@@ -1,4 +1,4 @@
-package com.marcobaccarani.src.warp.ecs;
+package com.marcobaccarani.warp.ecs;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -12,16 +12,37 @@ public class Entity {
 	private String name;
 	private int tag;
 	private int layerId;
+	private boolean active;
 	
 	private Map<Class<? extends Component>, Component> components;	
 	
 	private Renderer renderer;
 	
 	public Entity() {
-		components = new HashMap<Class<? extends Component>, Component>();
-		name = "Entity";
+		this("Entity");
 	}
 	
+	public Entity(String name) {
+		components = new HashMap<Class<? extends Component>, Component>();
+		this.name = name;
+		active = true;
+	}
+	
+	public boolean isActive() {
+		return active;
+	}
+
+	public void setActive(boolean active) {
+		this.active = active;
+		
+		for(Component component : components.values()) {			
+			component.setEnabled(isActive());
+		}
+		
+		if(renderer != null)
+			renderer.setEnabled(isActive());
+	}
+
 	public System getSystem() {
 		return system;
 	}
@@ -43,6 +64,9 @@ public class Entity {
 	}
 
 	public void setName(String name) {
+		if(name == null)
+			throw new IllegalArgumentException("the entity name can't be null!");
+		
 		this.name = name;
 	}
 	
@@ -85,6 +109,10 @@ public class Entity {
 	
 	public Collection<Component> getComponents() {
 		return components.values();
+	}
+	
+	public void destroy() {
+		system.removeEntity(this);
 	}
 	
 	protected void initialize() {

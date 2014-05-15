@@ -1,9 +1,9 @@
-package com.marcobaccarani.src.warp.ecs.externals;
+package com.marcobaccarani.warp.ecs.externals;
 
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.Manifold;
-import com.marcobaccarani.src.warp.ecs.Entity;
+import com.marcobaccarani.warp.ecs.Entity;
 
 public interface B2DContactListener {	
 	public void beginContact(Entity e, Contact contact);

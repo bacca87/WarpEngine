@@ -1,9 +1,9 @@
-package com.marcobaccarani.src.warp.ecs.components;
+package com.marcobaccarani.warp.ecs.components;
 
 import java.util.HashMap;
 import com.badlogic.gdx.graphics.g2d.Animation;
-import com.marcobaccarani.src.warp.ecs.Component;
-import com.marcobaccarani.src.warp.ecs.renderers.SpriteRenderer;
+import com.marcobaccarani.warp.ecs.Component;
+import com.marcobaccarani.warp.ecs.renderers.SpriteRenderer;
 
 public class AnimationsComponent extends Component {
 	private SpriteRenderer spriteRenderer;
@@ -52,12 +52,12 @@ public class AnimationsComponent extends Component {
 	}
 	
 	@Override
-	public void initialize() {
+	protected void initialize() {
 		spriteRenderer = entity.getRenderer(SpriteRenderer.class);
 	}
 	
 	@Override	
-	public void update(float deltaTime) {
+	protected void update(float deltaTime) {
 		if(spriteRenderer == null || activeAnimation == null || spriteRenderer.getSprite() == null)
 			return;
 	

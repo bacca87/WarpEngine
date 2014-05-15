@@ -1,10 +1,12 @@
-package com.marcobaccarani.src.warp.ecs;
+package com.marcobaccarani.warp.ecs;
 
 import java.util.LinkedList;
 import java.util.Queue;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-public class System {
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.utils.Disposable;
+
+public class System implements Disposable {
 	private int MAX_LAYERS;
 	
 	private EntityList[] layers;
@@ -104,7 +106,8 @@ public class System {
 		// update entities
 		for(EntityList entities : layers) {
 			for(Entity entity : entities) {
-				entity.update(deltaTime);
+				if(entity.isActive())
+					entity.update(deltaTime);
 			}
 		}
 		
@@ -114,7 +117,8 @@ public class System {
 	public void render(SpriteBatch batch) {
 		for(EntityList entities : layers) {
 			for(Entity entity : entities) {
-				entity.render(batch);
+				if(entity.isActive())
+					entity.render(batch);
 			}
 		}		
 	}
@@ -123,9 +127,21 @@ public class System {
 		for(int id : layersIDs) {
 			if(layers[id].size() > 0) {
 				for(Entity entity : layers[id]) {
-					entity.render(batch);
+					if(entity.isActive())
+						entity.render(batch);
 				}
 			}
 		}		
+	}
+	
+	@Override
+	public void dispose() {
+		// remove all entities
+		for(EntityList entities : layers) {
+			for(Entity entity : entities) {
+				entity.removed();
+			}
+			entities.clear();
+		}
 	}
 }
