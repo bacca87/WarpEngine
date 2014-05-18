@@ -1,8 +1,10 @@
 package com.marcobaccarani.warp.ecs;
 
 public abstract class Component {
-	protected Entity entity;	
 	private boolean enabled = true;
+	
+	protected Entity entity;
+	protected Transform transform;	
 	
 	public final boolean isEnabled() {
 		return enabled;

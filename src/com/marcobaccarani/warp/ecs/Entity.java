@@ -1,5 +1,6 @@
 package com.marcobaccarani.warp.ecs;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -9,13 +10,17 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 public class Entity {
 	private System system;
 	
+	private Entity parent = null;
+	private ArrayList<Entity> childs = new ArrayList<Entity>();
+	
+	public Transform transform = new Transform();
+	
 	private String name;
 	private int tag;
 	private int layerId;
 	private boolean active;
 	
-	private Map<Class<? extends Component>, Component> components;	
-	
+	private Map<Class<? extends Component>, Component> components = new HashMap<Class<? extends Component>, Component>();
 	private Renderer renderer;
 	
 	public Entity() {
@@ -23,7 +28,6 @@ public class Entity {
 	}
 	
 	public Entity(String name) {
-		components = new HashMap<Class<? extends Component>, Component>();
 		this.name = name;
 		active = true;
 	}
@@ -36,11 +40,15 @@ public class Entity {
 		this.active = active;
 		
 		for(Component component : components.values()) {			
-			component.setEnabled(isActive());
+			component.setEnabled(active);
 		}
 		
 		if(renderer != null)
-			renderer.setEnabled(isActive());
+			renderer.setEnabled(active);
+		
+		for(Entity entity : childs) {
+			entity.setActive(active);
+		}
 	}
 
 	public System getSystem() {
@@ -78,6 +86,35 @@ public class Entity {
 		this.tag = tag;
 	}
 
+	public void setParent(Entity parent) {
+		this.parent = parent;
+		this.transform.setParent(parent.transform);
+	}
+	
+	public Entity getParent() {
+		return parent;
+	}
+	
+	public void addChild(Entity child) {
+		child.setParent(this);		
+		child.transform.addChild(child.transform);
+		childs.add(child);
+	}
+	
+	public void removeChild(Entity child) {
+		child.setParent(null);
+		child.transform.removeChild(child.transform);
+		childs.remove(child);
+	}	
+
+	public void destroy() {		
+		system.removeEntity(this);
+		
+		for(Entity entity : childs) {
+			system.removeEntity(entity);
+		}		
+	}
+	
 	public <T extends Renderer> T getRenderer(Class<T> type) {
 		if(type.isInstance(renderer))
 			return type.cast(renderer);
@@ -90,19 +127,27 @@ public class Entity {
 			this.renderer.removed();
 		
 		renderer.entity = this;
+		renderer.transform = transform;
 		this.renderer = renderer;
 	}
 	
 	public void addComponent(Component component) {
-		component.entity = this;		
+		component.entity = this;
+		component.transform = transform;
 		components.put(component.getClass(), component);
+	}
+	
+	public void removeComponent(Component component) {
+		removeComponent(component.getClass());
 	}
 	
 	public void removeComponent(Class<? extends Component> componentClass) {
 		Component component = components.remove(componentClass);
 		component.removed();
+		component.entity = null;
+		component.transform = null;
 	}
-	
+		
 	public <T extends Component> T getComponent(Class<T> type) {
 		return type.cast(components.get(type));
 	}
@@ -110,11 +155,7 @@ public class Entity {
 	public Collection<Component> getComponents() {
 		return components.values();
 	}
-	
-	public void destroy() {
-		system.removeEntity(this);
-	}
-	
+		
 	protected void initialize() {
 		for(Component component : components.values()) {
 			component.initialize();
@@ -136,10 +177,20 @@ public class Entity {
 	protected void removed() {
 		for(Component component : components.values()) {
 			component.removed();
+		}		
+		components.clear();
+		
+		if(renderer != null) {
+			renderer.removed();
+			renderer = null;
 		}
 		
-		if(renderer != null)
-			renderer.removed();
+		if(parent != null) {
+			parent.removeChild(this);
+			parent = null;
+		}
+			
+		childs.clear();
 	}
 	
 	protected void update(float deltaTime) {

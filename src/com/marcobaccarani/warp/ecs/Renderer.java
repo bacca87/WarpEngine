@@ -3,8 +3,10 @@ package com.marcobaccarani.warp.ecs;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public abstract class Renderer {
-	protected Entity entity;
 	private boolean enabled = true;
+	
+	protected Entity entity;
+	protected Transform transform;	
 		
 	public final boolean isEnabled() {
 		return enabled;

@@ -30,7 +30,6 @@ import com.marcobaccarani.warp.ecs.Component;
 import com.marcobaccarani.warp.ecs.Entity;
 import com.marcobaccarani.warp.ecs.EntityList;
 import com.marcobaccarani.warp.ecs.components.RigidBodyComponent;
-import com.marcobaccarani.warp.ecs.components.TransformComponent;
 import com.marcobaccarani.warp.utils.Utility;
 
 public class B2DManager implements ContactListener, Disposable {
@@ -191,18 +190,17 @@ public class B2DManager implements ContactListener, Disposable {
 			if(e == null || body.getType() == BodyType.StaticBody || body.getType() == BodyType.KinematicBody)
 				continue;
 			
-			RigidBodyComponent rigidbody = e.getComponent(RigidBodyComponent.class);
-			TransformComponent transform = e.getComponent(TransformComponent.class);
+			RigidBodyComponent rigidbody = e.getComponent(RigidBodyComponent.class);			
 			
-			if(rigidbody == null || transform == null) 
+			if(rigidbody == null) 
 				continue;
 			
-			transform.setXY(
+			e.transform.setXY(
 					(body.getPosition().x * accumulatorRatio + rigidbody.lastPosition.x * oneMinusRatio) * box2d_to_world,
 					(body.getPosition().y * accumulatorRatio + rigidbody.lastPosition.y * oneMinusRatio) * box2d_to_world 
 			);
 			
-			transform.setRotation((accumulatorRatio * body.getAngle() + oneMinusRatio * rigidbody.lastAngle) * MathUtils.radDeg);
+			e.transform.setRotation((accumulatorRatio * body.getAngle() + oneMinusRatio * rigidbody.lastAngle) * MathUtils.radDeg);
 		}
 	}
 
