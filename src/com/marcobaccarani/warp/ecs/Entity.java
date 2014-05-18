@@ -143,6 +143,9 @@ public class Entity {
 	}
 	
 	protected void update(float deltaTime) {
+		if(!isActive())
+			return;
+		
 		for(Component component : components.values()) {
 			if(component.isEnabled())
 				component.update(deltaTime);
@@ -150,6 +153,9 @@ public class Entity {
 	}
 	
 	protected void render(SpriteBatch batch) {
+		if(!isActive())
+			return;
+		
 		if(renderer != null && renderer.isEnabled())
 			renderer.render(batch);
 	}

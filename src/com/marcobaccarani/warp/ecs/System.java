@@ -11,17 +11,21 @@ public class System implements Disposable {
 	private Queue<Entity> added = new LinkedList<Entity>();
 	private Queue<Entity> removed = new LinkedList<Entity>();
 	
-	private RenderingSystem renderer;
+	private RenderingSystem renderingSystem;
 	
-	public System() {
+	public System() {		
 	}
 	
-	public RenderingSystem getRenderer() {
-		return renderer;
+	public System(RenderingSystem renderingSystem) {
+		this.renderingSystem = renderingSystem;
+	}
+	
+	public RenderingSystem getRenderingSystem() {
+		return renderingSystem;
 	}
 
-	public void setRenderer(RenderingSystem renderer) {
-		this.renderer = renderer;
+	public void setRenderingSystem(RenderingSystem renderingSystem) {
+		this.renderingSystem = renderingSystem;
 	}
 	
 	public int getEntitiesCount() {		
@@ -75,15 +79,14 @@ public class System implements Disposable {
 		
 		// update entities		
 		for(Entity entity : entities) {
-			if(entity.isActive())
-				entity.update(deltaTime);
+			entity.update(deltaTime);
 		}
 		
 		// TODO: considerare di aggiungere anche la chiamata del lateUpdate come in unity
 	}
 	
 	public void render() {		
-		renderer.loop(entities, newEntities);
+		renderingSystem.rendering(entities, newEntities);
 	}
 	
 	@Override
@@ -91,8 +94,10 @@ public class System implements Disposable {
 		// remove all entities		
 		for(Entity entity : entities) {
 			entity.removed();
-		}
-		
+		}		
 		entities.clear();
+		
+		if(renderingSystem != null)
+			renderingSystem.dispose();
 	}	
 }

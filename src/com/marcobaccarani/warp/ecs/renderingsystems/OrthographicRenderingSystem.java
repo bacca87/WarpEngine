@@ -9,7 +9,7 @@ import com.marcobaccarani.warp.ecs.Entity;
 import com.marcobaccarani.warp.ecs.EntityList;
 import com.marcobaccarani.warp.ecs.RenderingSystem;
 
-class OrthographicRenderingSystem extends RenderingSystem {
+public class OrthographicRenderingSystem extends RenderingSystem {
 	private static class PainterSort implements Comparator<Entity> {
 		@Override
 		public int compare(Entity o1, Entity o2) {
@@ -35,7 +35,7 @@ class OrthographicRenderingSystem extends RenderingSystem {
 	}
 	
 	@Override
-	public void loop(EntityList entities, boolean newEntities) {
+	public void rendering(EntityList entities, boolean newEntities) {
 		if(newEntities)
 			Collections.sort(entities, sorting);
 		
@@ -47,5 +47,10 @@ class OrthographicRenderingSystem extends RenderingSystem {
 		}
 		
 		batch.end();
+	}
+
+	@Override
+	public void dispose() {
+		batch.dispose();
 	}
 }

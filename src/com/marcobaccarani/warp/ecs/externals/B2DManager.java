@@ -2,13 +2,13 @@ package com.marcobaccarani.warp.ecs.externals;
 
 import java.util.Iterator;
 
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.MapObjects;
 import com.badlogic.gdx.maps.objects.PolygonMapObject;
 import com.badlogic.gdx.maps.objects.PolylineMapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Polyline;
 import com.badlogic.gdx.math.Rectangle;
@@ -123,8 +123,8 @@ public class B2DManager implements ContactListener, Disposable {
 		physicsWorld.setGravity(this.gravity);
 	}
 	
-	public void render(OrthographicCamera camera) {
-		debugRenderer.render(physicsWorld, camera.combined.cpy().scl(box2d_to_world));
+	public void render(Matrix4 projection) {
+		debugRenderer.render(physicsWorld, projection.cpy().scl(box2d_to_world));
 	}
 	
 	@Override
