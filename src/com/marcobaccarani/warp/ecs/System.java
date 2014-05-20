@@ -39,11 +39,11 @@ public final class System implements Disposable {
 		return entities.size();
 	}
 	
-	public void addEntity(Entity entity) {		
+	protected void addEntity(Entity entity) {		
 		added.add(entity);
 	}
 	
-	public void removeEntity(Entity entity) {
+	protected void removeEntity(Entity entity) {
 		removed.add(entity);
 	}
 	
