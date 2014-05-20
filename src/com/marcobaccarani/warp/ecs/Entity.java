@@ -7,14 +7,16 @@ import java.util.Map;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-public class Entity {
-	private System system;
+public final class Entity {
+	private final System system;
 	
 	private Entity parent = null;
 	private ArrayList<Entity> childs = new ArrayList<Entity>();
 	
 	public Transform transform = new Transform();
 	
+	private boolean added;
+	private int id;
 	private String name;
 	private int tag;
 	private int layerId;
@@ -23,15 +25,26 @@ public class Entity {
 	private Map<Class<? extends Component>, Component> components = new HashMap<Class<? extends Component>, Component>();
 	private Renderer renderer;
 	
-	public Entity() {
-		this("Entity");
+	protected Entity(int id, System system) {
+		this.system = system;
+		added = false;
+		setActive(true);		
+		setName("Entity_" + Integer.toString(id));
 	}
 	
-	public Entity(String name) {
-		this.name = name;
-		active = true;
+	public Entity addToSystem() {
+		//add the entity to the system only once
+		if(!added) {
+			system.addEntity(this);
+			added = true;
+		}
+		return this;
 	}
 	
+	public int getId() {
+		return id;
+	}
+
 	public boolean isActive() {
 		return active;
 	}
@@ -39,7 +52,7 @@ public class Entity {
 	public void setActive(boolean active) {
 		this.active = active;
 		
-		for(Component component : components.values()) {			
+		for(Component component : components.values()) {
 			component.setEnabled(active);
 		}
 		
@@ -53,10 +66,6 @@ public class Entity {
 
 	public System getSystem() {
 		return system;
-	}
-
-	public void setSystem(System system) {		
-		this.system = system;
 	}
 	
 	public int getLayerId() {
@@ -105,14 +114,14 @@ public class Entity {
 		child.setParent(null);
 		child.transform.removeChild(child.transform);
 		childs.remove(child);
-	}	
+	}
 
-	public void destroy() {		
+	public void destroy() {
 		system.removeEntity(this);
 		
 		for(Entity entity : childs) {
 			system.removeEntity(entity);
-		}		
+		}
 	}
 	
 	public <T extends Renderer> T getRenderer(Class<T> type) {
@@ -124,14 +133,21 @@ public class Entity {
 	
 	public void setRenderer(Renderer renderer) {
 		if(this.renderer != null)
+		{
 			this.renderer.removed();
+			renderer.system = null;
+			renderer.entity = null;
+			renderer.transform = null;
+		}
 		
+		this.renderer = renderer;
+		renderer.system = system;
 		renderer.entity = this;
 		renderer.transform = transform;
-		this.renderer = renderer;
 	}
 	
 	public void addComponent(Component component) {
+		component.system = system;
 		component.entity = this;
 		component.transform = transform;
 		components.put(component.getClass(), component);
@@ -144,6 +160,7 @@ public class Entity {
 	public void removeComponent(Class<? extends Component> componentClass) {
 		Component component = components.remove(componentClass);
 		component.removed();
+		component.system = null;
 		component.entity = null;
 		component.transform = null;
 	}

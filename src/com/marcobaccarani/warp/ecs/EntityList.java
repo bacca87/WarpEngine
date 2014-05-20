@@ -24,4 +24,10 @@ public class EntityList extends ArrayList<Entity> {
 		
 		return listByTag;
 	}
+	
+	public void addAllToSystem() {
+		for(Entity entity : this) {
+			entity.addToSystem();
+		}
+	}
 }

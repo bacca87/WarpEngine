@@ -31,6 +31,7 @@ import com.marcobaccarani.warp.ecs.Entity;
 import com.marcobaccarani.warp.ecs.EntityList;
 import com.marcobaccarani.warp.ecs.components.RigidBodyComponent;
 import com.marcobaccarani.warp.utils.Utility;
+import com.marcobaccarani.warp.ecs.System;
 
 public class B2DManager implements ContactListener, Disposable {
 	// pixel to meter ratio
@@ -303,13 +304,13 @@ public class B2DManager implements ContactListener, Disposable {
 	/* 		  		UTILS			   */
 	/***********************************/
 	
-	public EntityList createStaticMapObjects(MapObjects objects, boolean sensors) {
+	public EntityList createStaticMapObjects(System system, MapObjects objects, boolean sensors) {
 		EntityList list = new EntityList();
 		Iterator<MapObject> mapObjectIterator = objects.iterator();
 		
 		while(mapObjectIterator.hasNext()) {
 			MapObject obj = mapObjectIterator.next();
-			Entity e = new Entity();
+			Entity e = system.createEntity();
 			
 			if(obj.getName() != null)
 				e.setName(obj.getName());

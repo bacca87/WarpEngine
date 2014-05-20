@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 public abstract class Renderer {
 	private boolean enabled = true;
 	
+	protected System system;
 	protected Entity entity;
 	protected Transform transform;	
 		

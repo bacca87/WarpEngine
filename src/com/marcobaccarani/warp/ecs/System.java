@@ -5,15 +5,18 @@ import java.util.Queue;
 
 import com.badlogic.gdx.utils.Disposable;
 
-public class System implements Disposable {
-	private boolean newEntities = false;
+public final class System implements Disposable {
 	private final EntityList entities = new EntityList();
+	
+	private boolean newEntities = false;
+	private int uniqueIdCounter = 0;
+	
 	private Queue<Entity> added = new LinkedList<Entity>();
 	private Queue<Entity> removed = new LinkedList<Entity>();
 	
 	private RenderingSystem renderingSystem;
 	
-	public System() {		
+	public System() {
 	}
 	
 	public System(RenderingSystem renderingSystem) {
@@ -28,17 +31,15 @@ public class System implements Disposable {
 		this.renderingSystem = renderingSystem;
 	}
 	
-	public int getEntitiesCount() {		
+	public Entity createEntity() {
+		return new Entity(uniqueIdCounter++, this);
+	}
+	
+	public int getEntitiesCount() {
 		return entities.size();
 	}
 	
-	public void addEntities(EntityList entities) {
-		for(Entity entity : entities) {
-			addEntity(entity);
-		}
-	}
-	
-	public void addEntity(Entity entity) {
+	public void addEntity(Entity entity) {		
 		added.add(entity);
 	}
 	
@@ -60,13 +61,12 @@ public class System implements Disposable {
 		// remove entities
 		while(!removed.isEmpty()) {
 			Entity entity = removed.poll();
-			entities.remove(entity);
 			entity.removed();
+			entities.remove(entity);
 		}
 		
 		// add entities
 		for(Entity entity : added) {
-			entity.setSystem(this);
 			entities.add(entity);
 			entity.initialize();
 			newEntities = true;
