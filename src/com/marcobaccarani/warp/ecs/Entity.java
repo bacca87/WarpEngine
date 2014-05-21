@@ -13,7 +13,7 @@ public final class Entity {
 	private Entity parent = null;
 	private ArrayList<Entity> childs = new ArrayList<Entity>();
 	
-	public Transform transform = new Transform();
+	public final Transform transform = new Transform();
 	
 	private boolean added;
 	private int id;
@@ -97,7 +97,11 @@ public final class Entity {
 
 	public void setParent(Entity parent) {
 		this.parent = parent;
-		this.transform.setParent(parent.transform);
+		
+		if(parent != null)
+			this.transform.setParent(parent.transform);
+		else
+			this.transform.setParent(null);
 	}
 	
 	public Entity getParent() {
@@ -106,13 +110,13 @@ public final class Entity {
 	
 	public void addChild(Entity child) {
 		child.setParent(this);		
-		child.transform.addChild(child.transform);
+		transform.addChild(child.transform);
 		childs.add(child);
 	}
 	
 	public void removeChild(Entity child) {
 		child.setParent(null);
-		child.transform.removeChild(child.transform);
+		transform.removeChild(child.transform);
 		childs.remove(child);
 	}
 
