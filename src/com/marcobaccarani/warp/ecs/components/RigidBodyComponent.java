@@ -12,8 +12,7 @@ public class RigidBodyComponent extends Component {
 	public float lastAngle = 0;
 	
 	public RigidBodyComponent(Body body) {
-		this.body = body;
-		//this.body.setUserData(entity);
+		this.body = body;		
 		this.world = body.getWorld();		
 	}
 
@@ -23,7 +22,8 @@ public class RigidBodyComponent extends Component {
 	
 	@Override
 	protected void initialize() {
-		lastPosition.set(body.getPosition());		
+		body.setUserData(entity);
+		lastPosition.set(body.getPosition());
 	}
 	
 	@Override

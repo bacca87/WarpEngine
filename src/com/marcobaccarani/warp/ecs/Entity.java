@@ -1,33 +1,50 @@
 package com.marcobaccarani.warp.ecs;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-public class Entity {
-	private System system;
+public final class Entity {
+	private final System system;
 	
+	private Entity parent = null;
+	private ArrayList<Entity> childs = new ArrayList<Entity>();
+	
+	public final Transform transform = new Transform();
+	
+	private boolean added;
+	private int id;
 	private String name;
 	private int tag;
 	private int layerId;
 	private boolean active;
 	
-	private Map<Class<? extends Component>, Component> components;	
-	
+	private Map<Class<? extends Component>, Component> components = new HashMap<Class<? extends Component>, Component>();
 	private Renderer renderer;
 	
-	public Entity() {
-		this("Entity");
+	protected Entity(int id, System system) {
+		this.system = system;
+		added = false;
+		setActive(true);		
+		setName("Entity_" + Integer.toString(id));
 	}
 	
-	public Entity(String name) {
-		components = new HashMap<Class<? extends Component>, Component>();
-		this.name = name;
-		active = true;
+	public Entity addToSystem() {
+		//add the entity to the system only once
+		if(!added) {
+			system.addEntity(this);
+			added = true;
+		}
+		return this;
 	}
 	
+	public int getId() {
+		return id;
+	}
+
 	public boolean isActive() {
 		return active;
 	}
@@ -35,20 +52,20 @@ public class Entity {
 	public void setActive(boolean active) {
 		this.active = active;
 		
-		for(Component component : components.values()) {			
-			component.setEnabled(isActive());
+		for(Component component : components.values()) {
+			component.setEnabled(active);
 		}
 		
 		if(renderer != null)
-			renderer.setEnabled(isActive());
+			renderer.setEnabled(active);
+		
+		for(Entity entity : childs) {
+			entity.setActive(active);
+		}
 	}
 
 	public System getSystem() {
 		return system;
-	}
-
-	public void setSystem(System system) {		
-		this.system = system;
 	}
 	
 	public int getLayerId() {
@@ -78,6 +95,39 @@ public class Entity {
 		this.tag = tag;
 	}
 
+	public void setParent(Entity parent) {
+		this.parent = parent;
+		
+		if(parent != null)
+			this.transform.setParent(parent.transform);
+		else
+			this.transform.setParent(null);
+	}
+	
+	public Entity getParent() {
+		return parent;
+	}
+	
+	public void addChild(Entity child) {
+		child.setParent(this);		
+		transform.addChild(child.transform);
+		childs.add(child);
+	}
+	
+	public void removeChild(Entity child) {
+		child.setParent(null);
+		transform.removeChild(child.transform);
+		childs.remove(child);
+	}
+
+	public void destroy() {
+		system.removeEntity(this);
+		
+		for(Entity entity : childs) {
+			system.removeEntity(entity);
+		}
+	}
+	
 	public <T extends Renderer> T getRenderer(Class<T> type) {
 		if(type.isInstance(renderer))
 			return type.cast(renderer);
@@ -87,22 +137,38 @@ public class Entity {
 	
 	public void setRenderer(Renderer renderer) {
 		if(this.renderer != null)
+		{
 			this.renderer.removed();
+			renderer.system = null;
+			renderer.entity = null;
+			renderer.transform = null;
+		}
 		
-		renderer.entity = this;
 		this.renderer = renderer;
+		renderer.system = system;
+		renderer.entity = this;
+		renderer.transform = transform;
 	}
 	
 	public void addComponent(Component component) {
-		component.entity = this;		
+		component.system = system;
+		component.entity = this;
+		component.transform = transform;
 		components.put(component.getClass(), component);
+	}
+	
+	public void removeComponent(Component component) {
+		removeComponent(component.getClass());
 	}
 	
 	public void removeComponent(Class<? extends Component> componentClass) {
 		Component component = components.remove(componentClass);
 		component.removed();
+		component.system = null;
+		component.entity = null;
+		component.transform = null;
 	}
-	
+		
 	public <T extends Component> T getComponent(Class<T> type) {
 		return type.cast(components.get(type));
 	}
@@ -110,11 +176,7 @@ public class Entity {
 	public Collection<Component> getComponents() {
 		return components.values();
 	}
-	
-	public void destroy() {
-		system.removeEntity(this);
-	}
-	
+		
 	protected void initialize() {
 		for(Component component : components.values()) {
 			component.initialize();
@@ -136,13 +198,26 @@ public class Entity {
 	protected void removed() {
 		for(Component component : components.values()) {
 			component.removed();
+		}		
+		components.clear();
+		
+		if(renderer != null) {
+			renderer.removed();
+			renderer = null;
 		}
 		
-		if(renderer != null)
-			renderer.removed();
+		if(parent != null) {
+			parent.removeChild(this);
+			parent = null;
+		}
+			
+		childs.clear();
 	}
 	
 	protected void update(float deltaTime) {
+		if(!isActive())
+			return;
+		
 		for(Component component : components.values()) {
 			if(component.isEnabled())
 				component.update(deltaTime);
@@ -150,6 +225,9 @@ public class Entity {
 	}
 	
 	protected void render(SpriteBatch batch) {
+		if(!isActive())
+			return;
+		
 		if(renderer != null && renderer.isEnabled())
 			renderer.render(batch);
 	}

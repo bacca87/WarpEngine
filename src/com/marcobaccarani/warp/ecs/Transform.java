@@ -1,15 +1,14 @@
-package com.marcobaccarani.warp.ecs.components;
+package com.marcobaccarani.warp.ecs;
 
 import java.util.ArrayList;
 
 import com.badlogic.gdx.math.Matrix3;
 import com.badlogic.gdx.math.Vector2;
-import com.marcobaccarani.warp.ecs.Component;
 
 // TODO: vedere se ottimizzare il componente in modo che se non ha figli o padri non faccia i calcoli sulle matrici ma utilizzi direttamente le posizioni.
 // 		 Questo perche normalmente la maggior parte delle entità non saranno annidate ma elementi singoli.
 
-public class TransformComponent extends Component {
+public class Transform {
 	private Vector2 position = new Vector2();
 	private Vector2 scale = new Vector2(1,1);
 	private float rotation = 0.0f;
@@ -22,18 +21,27 @@ public class TransformComponent extends Component {
 	private Matrix3 worldTransform = new Matrix3();
 	private Matrix3 invWorldTransform = new Matrix3();
 	
-	private TransformComponent parent;
+	private Transform parent;
 
-	private ArrayList<TransformComponent> childs = new ArrayList<TransformComponent>();
-
-	public void addChild(TransformComponent transform) {
+	private ArrayList<Transform> childs = new ArrayList<Transform>();
+	
+	protected void addChild(Transform transform) {
 		transform.setParent(this);
 		childs.add(transform);
 	}
 	
-	public void removeChild(TransformComponent transform) {
+	protected void removeChild(Transform transform) {
 		transform.setParent(null);		
 		childs.remove(transform);
+	}
+	
+	protected void setParent(Transform parent) {
+		this.parent = parent;
+		calculateLocalTransform();
+	}
+	
+	protected Transform getParent() {
+		return parent;
 	}
 	
 	protected void calculateWorldTransform() {
@@ -68,7 +76,7 @@ public class TransformComponent extends Component {
         if(parent != null)
         	localTransform.set(parent.invWorldTransform).mul(worldTransform);
         else
-        	localTransform.set(worldTransform);        	
+        	localTransform.set(worldTransform);
 
         localTransform.getTranslation(localPosition);
         localTransform.getScale(localScale);
@@ -78,19 +86,10 @@ public class TransformComponent extends Component {
 	}
 	
 	protected void calculateChildsWorldTransform() {
-		for(TransformComponent transform : childs) {
+		for(Transform transform : childs) {
 			transform.calculateWorldTransform();			
 			transform.calculateChildsWorldTransform();
 		}
-	}
-		
-	public TransformComponent getParent() {
-		return parent;
-	}
-	
-	private void setParent(TransformComponent parent) {
-		this.parent = parent;
-		calculateLocalTransform();
 	}
 		
 	public float getX() {
@@ -133,117 +132,117 @@ public class TransformComponent extends Component {
 		return localRotation;
 	}
 	
-	public TransformComponent setX(float x) {
+	public Transform setX(float x) {
 		position.x = x;
 		calculateLocalTransform();
 		return this;
 	}
 	
-	public TransformComponent setY(float y) {
+	public Transform setY(float y) {
 		position.y = y;
 		calculateLocalTransform();
 		return this;
 	}
 	
-	public TransformComponent setXY(float x, float y) {
+	public Transform setXY(float x, float y) {
 		position.x = x;
 		position.y = y;
 		calculateLocalTransform();
 		return this;
 	}
 	
-	public TransformComponent setXY(Vector2 position) {
+	public Transform setXY(Vector2 position) {
 		this.position.x = position.x;
 		this.position.y = position.y;
 		calculateLocalTransform();
 		return this;
 	}
 	
-	public TransformComponent setLocalX(float x) {
+	public Transform setLocalX(float x) {
 		localPosition.x = x;
 		calculateWorldTransform();
 		return this;
 	}
 	
-	public TransformComponent setLocalY(float y) {
+	public Transform setLocalY(float y) {
 		localPosition.y = y;
 		calculateWorldTransform();
 		return this;
 	}
 	
-	public TransformComponent setLocalXY(float x, float y) {
+	public Transform setLocalXY(float x, float y) {
 		localPosition.x = x;
 		localPosition.y = y;
 		calculateWorldTransform();
 		return this;
 	}
 	
-	public TransformComponent setLocalXY(Vector2 localPosition) {
+	public Transform setLocalXY(Vector2 localPosition) {
 		this.localPosition.x = localPosition.x;
 		this.localPosition.y = localPosition.y;
 		calculateWorldTransform();
 		return this;
 	}
 	
-	public TransformComponent setScaleX(float x) {
+	public Transform setScaleX(float x) {
 		scale.x = x;
 		calculateLocalTransform();
 		return this;
 	}
 	
-	public TransformComponent setScaleY(float y) {
+	public Transform setScaleY(float y) {
 		scale.y = y;
 		calculateLocalTransform();
 		return this;
 	}
 	
-	public TransformComponent setScaleXY(float x, float y) {
+	public Transform setScaleXY(float x, float y) {
 		scale.x = x;
 		scale.y = y;
 		calculateLocalTransform();
 		return this;
 	}
 	
-	public TransformComponent setScaleXY(Vector2 scale) {
+	public Transform setScaleXY(Vector2 scale) {
 		this.scale.x = scale.x;
 		this.scale.y = scale.y;
 		calculateLocalTransform();
 		return this;
 	}
 	
-	public TransformComponent setRotation(float degrees) {
+	public Transform setRotation(float degrees) {
 		rotation = degrees;
 		calculateLocalTransform();
 		return this;
 	}
 	
-	public TransformComponent setLocalScaleX(float x) {
+	public Transform setLocalScaleX(float x) {
 		localScale.x = x;
 		calculateWorldTransform();
 		return this;
 	}
 	
-	public TransformComponent setLocalScaleY(float y) {
+	public Transform setLocalScaleY(float y) {
 		localScale.y = y;
 		calculateWorldTransform();
 		return this;
 	}
 	
-	public TransformComponent setLocalScaleXY(float x, float y) {
+	public Transform setLocalScaleXY(float x, float y) {
 		localScale.x = x;
 		localScale.y = y;
 		calculateWorldTransform();
 		return this;
 	}
 	
-	public TransformComponent setLocalScaleXY(Vector2 localScale) {
+	public Transform setLocalScaleXY(Vector2 localScale) {
 		this.localScale.x = localScale.x;
 		this.localScale.y = localScale.y;
 		calculateWorldTransform();
 		return this;
 	}
 	
-	public TransformComponent setLocalRotation(float degrees) {
+	public Transform setLocalRotation(float degrees) {
 		localRotation = degrees;
 		calculateWorldTransform();
 		return this;

@@ -2,13 +2,13 @@ package com.marcobaccarani.warp.ecs.externals;
 
 import java.util.Iterator;
 
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.MapObjects;
 import com.badlogic.gdx.maps.objects.PolygonMapObject;
 import com.badlogic.gdx.maps.objects.PolylineMapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Polyline;
 import com.badlogic.gdx.math.Rectangle;
@@ -30,8 +30,8 @@ import com.marcobaccarani.warp.ecs.Component;
 import com.marcobaccarani.warp.ecs.Entity;
 import com.marcobaccarani.warp.ecs.EntityList;
 import com.marcobaccarani.warp.ecs.components.RigidBodyComponent;
-import com.marcobaccarani.warp.ecs.components.TransformComponent;
 import com.marcobaccarani.warp.utils.Utility;
+import com.marcobaccarani.warp.ecs.System;
 
 public class B2DManager implements ContactListener, Disposable {
 	// pixel to meter ratio
@@ -123,8 +123,8 @@ public class B2DManager implements ContactListener, Disposable {
 		physicsWorld.setGravity(this.gravity);
 	}
 	
-	public void render(OrthographicCamera camera) {
-		debugRenderer.render(physicsWorld, camera.combined.cpy().scl(box2d_to_world));
+	public void render(Matrix4 projection) {
+		debugRenderer.render(physicsWorld, projection.cpy().scl(box2d_to_world));
 	}
 	
 	@Override
@@ -191,18 +191,17 @@ public class B2DManager implements ContactListener, Disposable {
 			if(e == null || body.getType() == BodyType.StaticBody || body.getType() == BodyType.KinematicBody)
 				continue;
 			
-			RigidBodyComponent rigidbody = e.getComponent(RigidBodyComponent.class);
-			TransformComponent transform = e.getComponent(TransformComponent.class);
+			RigidBodyComponent rigidbody = e.getComponent(RigidBodyComponent.class);			
 			
-			if(rigidbody == null || transform == null) 
+			if(rigidbody == null) 
 				continue;
 			
-			transform.setXY(
+			e.transform.setXY(
 					(body.getPosition().x * accumulatorRatio + rigidbody.lastPosition.x * oneMinusRatio) * box2d_to_world,
 					(body.getPosition().y * accumulatorRatio + rigidbody.lastPosition.y * oneMinusRatio) * box2d_to_world 
 			);
 			
-			transform.setRotation((accumulatorRatio * body.getAngle() + oneMinusRatio * rigidbody.lastAngle) * MathUtils.radDeg);
+			e.transform.setRotation((accumulatorRatio * body.getAngle() + oneMinusRatio * rigidbody.lastAngle) * MathUtils.radDeg);
 		}
 	}
 
@@ -305,13 +304,13 @@ public class B2DManager implements ContactListener, Disposable {
 	/* 		  		UTILS			   */
 	/***********************************/
 	
-	public EntityList createStaticMapObjects(MapObjects objects, boolean sensors) {
+	public EntityList createStaticMapObjects(System system, MapObjects objects, boolean sensors) {
 		EntityList list = new EntityList();
 		Iterator<MapObject> mapObjectIterator = objects.iterator();
 		
 		while(mapObjectIterator.hasNext()) {
 			MapObject obj = mapObjectIterator.next();
-			Entity e = new Entity();
+			Entity e = system.createEntity();
 			
 			if(obj.getName() != null)
 				e.setName(obj.getName());

@@ -3,99 +3,73 @@ package com.marcobaccarani.warp.ecs;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Disposable;
 
-public class System implements Disposable {
-	private int MAX_LAYERS;
+public final class System implements Disposable {
+	private final EntityList entities = new EntityList();
 	
-	private EntityList[] layers;
-	private Queue<Entity> added;
-	private Queue<Entity> removed;
+	private boolean newEntities = false;
+	private int uniqueIdCounter = 0;
 	
-	public System(int MAX_LAYERS) {
-		if (MAX_LAYERS <= 0) throw new IllegalArgumentException("MAX_LAYERS cannot be less than 1.");
-		
-		this.MAX_LAYERS = MAX_LAYERS;
-		
-		added = new LinkedList<Entity>();
-		removed = new LinkedList<Entity>();
-		layers = new EntityList[MAX_LAYERS];
-		
-		for(int i = 0; i < layers.length; i++) {
-			layers[i] = new EntityList();
-		}
+	private Queue<Entity> added = new LinkedList<Entity>();
+	private Queue<Entity> removed = new LinkedList<Entity>();
+	
+	private RenderingSystem renderingSystem;
+	
+	public System() {
+	}
+	
+	public System(RenderingSystem renderingSystem) {
+		this.renderingSystem = renderingSystem;
+	}
+	
+	public RenderingSystem getRenderingSystem() {
+		return renderingSystem;
+	}
+
+	public void setRenderingSystem(RenderingSystem renderingSystem) {
+		this.renderingSystem = renderingSystem;
+	}
+	
+	public Entity createEntity() {
+		return new Entity(uniqueIdCounter++, this);
 	}
 	
 	public int getEntitiesCount() {
-		int count = 0;
-		
-		for(EntityList list : layers) {
-			count += list.size();
-		}
-		
-		return count;
+		return entities.size();
 	}
 	
-	public void addEntities(EntityList entities) {
-		for(Entity entity : entities) {
-			addEntity(entity);
-		}
-	}
-	
-	public void addEntity(Entity entity) {
-		if (entity.getLayerId() < 0 || entity.getLayerId() >= MAX_LAYERS) 
-			throw new IllegalArgumentException("entity layer id must be set between 0 and " + Integer.toString(MAX_LAYERS-1));
-		
+	protected void addEntity(Entity entity) {		
 		added.add(entity);
 	}
 	
-	public void removeEntity(Entity entity) {
+	protected void removeEntity(Entity entity) {
 		removed.add(entity);
 	}
 	
 	public Entity getEntityByName(String name) {
-		for(EntityList entities : layers) {			
-			Entity e = entities.getEntityByName(name);
-			
-			if(e != null)
-				return e;
-		}		
-		return null;
-	}
-	
-	public Entity getEntityByName(String name, int layer) {
-		return layers[layer].getEntityByName(name);
+		return entities.getEntityByName(name);
 	}
 	
 	public EntityList getEntitiesByTag(int tag) {
-		EntityList listByTag = new EntityList();
-		for(EntityList entities : layers) {			
-			EntityList list = entities.getEntitiesByTag(tag);
-			
-			if(list != null) 
-				listByTag.addAll(list);
-		}		
-		return listByTag;
-	}
-	
-	public EntityList getEntitiesByTag(int tag, int layerId) {
-		return layers[layerId].getEntitiesByTag(tag);
+		return entities.getEntitiesByTag(tag);
 	}
 		
 	public void update(float deltaTime) {
+		newEntities = false;
+		
 		// remove entities
 		while(!removed.isEmpty()) {
 			Entity entity = removed.poll();
-			layers[entity.getLayerId()].remove(entity);
 			entity.removed();
+			entities.remove(entity);
 		}
 		
 		// add entities
 		for(Entity entity : added) {
-			entity.setSystem(this);
-			layers[entity.getLayerId()].add(entity);
+			entities.add(entity);
 			entity.initialize();
+			newEntities = true;
 		}
 		
 		// start entities
@@ -103,45 +77,27 @@ public class System implements Disposable {
 			added.poll().start();
 		}
 		
-		// update entities
-		for(EntityList entities : layers) {
-			for(Entity entity : entities) {
-				if(entity.isActive())
-					entity.update(deltaTime);
-			}
+		// update entities		
+		for(Entity entity : entities) {
+			entity.update(deltaTime);
 		}
 		
 		// TODO: considerare di aggiungere anche la chiamata del lateUpdate come in unity
 	}
 	
-	public void render(SpriteBatch batch) {
-		for(EntityList entities : layers) {
-			for(Entity entity : entities) {
-				if(entity.isActive())
-					entity.render(batch);
-			}
-		}		
-	}
-	
-	public void render(SpriteBatch batch, int[] layersIDs) {
-		for(int id : layersIDs) {
-			if(layers[id].size() > 0) {
-				for(Entity entity : layers[id]) {
-					if(entity.isActive())
-						entity.render(batch);
-				}
-			}
-		}		
+	public void render() {		
+		renderingSystem.rendering(entities, newEntities);
 	}
 	
 	@Override
 	public void dispose() {
-		// remove all entities
-		for(EntityList entities : layers) {
-			for(Entity entity : entities) {
-				entity.removed();
-			}
-			entities.clear();
-		}
-	}
+		// remove all entities		
+		for(Entity entity : entities) {
+			entity.removed();
+		}		
+		entities.clear();
+		
+		if(renderingSystem != null)
+			renderingSystem.dispose();
+	}	
 }

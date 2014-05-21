@@ -4,11 +4,9 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.marcobaccarani.warp.ecs.Renderer;
-import com.marcobaccarani.warp.ecs.components.TransformComponent;
 
 public class SpriteRenderer extends Renderer {
 	private Sprite sprite;
-	private TransformComponent transform;
 	private Vector2 offset = new Vector2();
 	
 	public SpriteRenderer() {		
@@ -37,13 +35,12 @@ public class SpriteRenderer extends Renderer {
 	}
 	
 	@Override
-	protected void initialize() {
-		transform = entity.getComponent(TransformComponent.class);
+	protected void initialize() {		
 	}
 
 	@Override
 	protected void render(SpriteBatch batch) {
-		if(transform == null || sprite == null || sprite.getTexture() == null)
+		if(sprite == null || sprite.getTexture() == null)
 			return;
 		
 		//sprite.setOrigin(transform.origin.x, transform.origin.y);
