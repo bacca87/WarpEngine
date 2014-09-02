@@ -5,6 +5,10 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.World;
 import com.marcobaccarani.warp.ecs.Component;
 
+//TODO: vedere di implementare un component per le shape/fixture
+//		creare il body quando viene inizializzato
+//		wrappare le definizioni per la creazione di body shape e fixture dentro i componenti
+
 public class RigidBodyComponent extends Component {
 	private Body body;
 	private World world;
