@@ -20,8 +20,12 @@ import com.badlogic.gdx.physics.box2d.ChainShape;
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
+import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.Joint;
+import com.badlogic.gdx.physics.box2d.JointDef;
 import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
+import com.badlogic.gdx.physics.box2d.QueryCallback;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.utils.Array;
@@ -62,11 +66,7 @@ public class B2DManager implements ContactListener, Disposable {
 		physicsWorld.setAutoClearForces(false);
 		physicsWorld.setContactListener(this);
 	}
-	
-	public float getPixelToMeter() {
-		return box2d_to_world;
-	}
-	
+		
 	public void setPixelToMeter(float pixels) {
 		box2d_to_world = pixels;
 		world_to_box2d = 1 / pixels;
@@ -156,7 +156,7 @@ public class B2DManager implements ContactListener, Disposable {
 			//TODO: fixedUpdate();
 			physicsWorld.step(box2d_timestep, box2d_velocity_iterations, box2d_position_iterations);
 		}
-				
+		
 		physicsWorld.clearForces();
 		
 		smoothStates();
@@ -191,9 +191,9 @@ public class B2DManager implements ContactListener, Disposable {
 			if(e == null || body.getType() == BodyType.StaticBody || body.getType() == BodyType.KinematicBody)
 				continue;
 			
-			RigidBodyComponent rigidbody = e.getComponent(RigidBodyComponent.class);			
+			RigidBodyComponent rigidbody = e.getComponent(RigidBodyComponent.class);
 			
-			if(rigidbody == null) 
+			if(rigidbody == null)
 				continue;
 			
 			e.transform.setXY(
@@ -300,10 +300,24 @@ public class B2DManager implements ContactListener, Disposable {
 		return physicsWorld.createBody(bodyDef);
 	}
 	
+	public Joint createJoint(JointDef def) {
+		return physicsWorld.createJoint(def);
+	}
+	
+	public void destroyJoint(Joint joint) {
+		physicsWorld.destroyJoint(joint);
+	}
+	
+	public void queryAABB(QueryCallback callback, float lowerX, float lowerY, float upperX, float upperY) {
+		physicsWorld.QueryAABB(callback, lowerX, lowerY, upperX, upperY);
+	}
+		
+	
 	/***********************************/
 	/* 		  		UTILS			   */
 	/***********************************/
 	
+	//TODO: sarebbe meglio gestire i sensori usando le proprietà custom dei MapObjects
 	public EntityList createStaticMapObjects(System system, MapObjects objects, boolean sensors) {
 		EntityList list = new EntityList();
 		Iterator<MapObject> mapObjectIterator = objects.iterator();
@@ -323,27 +337,18 @@ public class B2DManager implements ContactListener, Disposable {
 				BodyDef bodyDef = new BodyDef();
 				bodyDef.type = BodyType.StaticBody;
 				// Set our body's starting position in the world
-				rect.getCenter(bodyDef.position).scl(world_to_box2d);
-				
-				// Create our body in the world using our body definition
-				Body body = createBody(bodyDef);
-				body.setUserData(e);
+				rect.getCenter(bodyDef.position).scl(world_to_box2d);				
 				
 				// Create a rectangle shape
 				PolygonShape b2dRect = new PolygonShape();
 				b2dRect.setAsBox((rect.width/2) * world_to_box2d, (rect.height/2) * world_to_box2d);
 
-				// Create our fixture and attach it to the body
-				if(sensors)
-					body.createFixture(b2dRect, 0.0f).setSensor(true);
-				else
-					body.createFixture(b2dRect, 0.0f).setSensor(false);
-
-				// Remember to dispose of any shapes after you're done with them!
-				// BodyDef and FixtureDef don't need disposing, but shapes do.
-				b2dRect.dispose();
+				// Create our fixture
+				FixtureDef fixtureDef = new FixtureDef();
+				fixtureDef.isSensor = sensors;
+				fixtureDef.density = 0.0f;
 				
-				e.addComponent(new RigidBodyComponent(body));
+				e.addComponent(new RigidBodyComponent(bodyDef, new FixtureDef[] { fixtureDef }, this));
 				
 				list.add(e);
 			}
@@ -357,25 +362,16 @@ public class B2DManager implements ContactListener, Disposable {
 				// Set our body's starting position in the world
 				bodyDef.position.set(polygon.getOriginX(), polygon.getOriginY()).scl(world_to_box2d);
 				
-				// Create our body in the world using our body definition
-				Body body = createBody(bodyDef);
-				body.setUserData(e);
-				
 				// Create a polygon shape						
 				ChainShape b2dChain = new ChainShape();
 				b2dChain.createLoop(Utility.mulFloatArray(polygon.getTransformedVertices(), world_to_box2d));
 				
-				// Create our fixture and attach it to the body
-				if(sensors)
-					body.createFixture(b2dChain, 0.0f).setSensor(true);
-				else
-					body.createFixture(b2dChain, 0.0f).setSensor(false);
+				// Create our fixture
+				FixtureDef fixtureDef = new FixtureDef();
+				fixtureDef.isSensor = sensors;
+				fixtureDef.density = 0.0f;
 				
-				// Remember to dispose of any shapes after you're done with them!
-				// BodyDef and FixtureDef don't need disposing, but shapes do.
-				b2dChain.dispose();
-				
-				e.addComponent(new RigidBodyComponent(body));				
+				e.addComponent(new RigidBodyComponent(bodyDef, new FixtureDef[] { fixtureDef }, this));
 								
 				list.add(e);
 			}
@@ -388,26 +384,17 @@ public class B2DManager implements ContactListener, Disposable {
 				bodyDef.type = BodyType.StaticBody;
 				// Set our body's starting position in the world
 				bodyDef.position.set(line.getOriginX(), line.getOriginY()).scl(world_to_box2d);
-				
-				// Create our body in the world using our body definition
-				Body body = createBody(bodyDef);
-				body.setUserData(e);
-				
+								
 				// Create a polygon shape						
 				ChainShape b2dChain = new ChainShape();
 				b2dChain.createChain(Utility.mulFloatArray(line.getTransformedVertices(), world_to_box2d));
 				
-				// Create our fixture and attach it to the body
-				if(sensors)
-					body.createFixture(b2dChain, 0.0f).setSensor(true);
-				else
-					body.createFixture(b2dChain, 0.0f).setSensor(false);
-
-				// Remember to dispose of any shapes after you're done with them!
-				// BodyDef and FixtureDef don't need disposing, but shapes do.
-				b2dChain.dispose();
+				// Create our fixture
+				FixtureDef fixtureDef = new FixtureDef();
+				fixtureDef.isSensor = sensors;
+				fixtureDef.density = 0.0f;
 				
-				e.addComponent(new RigidBodyComponent(body));	
+				e.addComponent(new RigidBodyComponent(bodyDef, new FixtureDef[] { fixtureDef }, this));
 				
 				list.add(e);
 			}
