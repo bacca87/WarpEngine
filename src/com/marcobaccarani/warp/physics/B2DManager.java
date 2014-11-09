@@ -295,7 +295,7 @@ public class B2DManager implements ContactListener, Disposable {
 	/* 		  WRAPPED METHODS		   */
 	/***********************************/
 	
-	public Body createBody(BodyDef bodyDef) {
+	protected Body createBody(BodyDef bodyDef) {
 		return physicsWorld.createBody(bodyDef);
 	}
 	
