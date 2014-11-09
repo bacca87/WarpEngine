@@ -1,4 +1,4 @@
-package com.marcobaccarani.warp.ecs.renderers;
+package com.marcobaccarani.warp.rendering;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;

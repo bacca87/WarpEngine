@@ -1,4 +1,4 @@
-package com.marcobaccarani.warp.ecs.components;
+package com.marcobaccarani.warp.rendering;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;

@@ -1,4 +1,4 @@
-package com.marcobaccarani.warp.ecs.externals;
+package com.marcobaccarani.warp.physics;
 
 import java.util.Iterator;
 
@@ -33,9 +33,8 @@ import com.badlogic.gdx.utils.Disposable;
 import com.marcobaccarani.warp.ecs.Component;
 import com.marcobaccarani.warp.ecs.Entity;
 import com.marcobaccarani.warp.ecs.EntityList;
-import com.marcobaccarani.warp.ecs.components.RigidBodyComponent;
-import com.marcobaccarani.warp.utils.Utility;
 import com.marcobaccarani.warp.ecs.System;
+import com.marcobaccarani.warp.math.Utility;
 
 public class B2DManager implements ContactListener, Disposable {
 	// pixel to meter ratio

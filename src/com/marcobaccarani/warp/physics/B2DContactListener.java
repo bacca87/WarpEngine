@@ -1,4 +1,4 @@
-package com.marcobaccarani.warp.ecs.externals;
+package com.marcobaccarani.warp.physics;
 
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.ContactImpulse;

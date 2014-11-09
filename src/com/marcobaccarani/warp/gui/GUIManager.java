@@ -1,4 +1,4 @@
-package com.marcobaccarani.warp.ecs.externals;
+package com.marcobaccarani.warp.gui;
 
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.scenes.scene2d.Actor;

@@ -1,4 +1,4 @@
-package com.marcobaccarani.warp.ecs.components;
+package com.marcobaccarani.warp.physics;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -7,7 +7,6 @@ import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.World;
 import com.marcobaccarani.warp.ecs.Component;
-import com.marcobaccarani.warp.ecs.externals.B2DManager;
 
 //TODO: vedere di implementare un component per le shape/fixture
 //		creare il body quando viene inizializzato

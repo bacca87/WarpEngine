@@ -1,9 +1,8 @@
-package com.marcobaccarani.warp.ecs.renderers;
+package com.marcobaccarani.warp.rendering;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.marcobaccarani.warp.ecs.Renderer;
-import com.marcobaccarani.warp.ecs.components.CameraComponent;
 
 public class TiledMapRenderer extends Renderer {
 	private CameraComponent mapCamera;

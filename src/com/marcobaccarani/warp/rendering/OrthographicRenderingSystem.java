@@ -1,4 +1,4 @@
-package com.marcobaccarani.warp.ecs.renderingsystems;
+package com.marcobaccarani.warp.rendering;
 
 import java.util.Collections;
 import java.util.Comparator;

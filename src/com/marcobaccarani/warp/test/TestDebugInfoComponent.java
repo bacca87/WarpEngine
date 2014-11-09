@@ -1,4 +1,4 @@
-package com.marcobaccarani.warp.ecs.components;
+package com.marcobaccarani.warp.test;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
@@ -8,6 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.marcobaccarani.warp.ecs.Component;
+import com.marcobaccarani.warp.gui.GUIComponent;
 
 public class TestDebugInfoComponent extends Component {
 	private GUIComponent gui;
