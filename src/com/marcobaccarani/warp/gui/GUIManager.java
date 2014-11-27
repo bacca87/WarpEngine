@@ -41,6 +41,14 @@ public class GUIManager implements Disposable {
 		stage.addActor(actor);
 	}
 	
+	public void setFocus(Actor actor) {
+		stage.setKeyboardFocus(actor);
+	}
+	
+	public void unfocusAll() {
+		stage.unfocusAll();
+	}
+	
 	@Override
 	public void dispose() {
 		stage.dispose();
