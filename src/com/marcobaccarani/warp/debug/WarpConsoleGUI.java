@@ -1,5 +1,9 @@
 package com.marcobaccarani.warp.debug;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
@@ -22,7 +26,24 @@ public class WarpConsoleGUI extends InputAdapter implements TextFieldFilter, Tex
 	private int toggleConsoleKey = '\\';
 	
 	private WarpConsole console = new WarpConsole();
-		
+	
+	private final OutputStream output = new OutputStream() {
+		@Override
+		public void write(final int b) throws IOException {
+			textArea.setText(textArea.getText() + String.valueOf(b));
+		}
+
+		@Override
+		public void write(byte[] b, int off, int len) throws IOException {
+			textArea.setText(textArea.getText() + new String(b, off, len));
+		}
+
+		@Override
+		public void write(byte[] b) throws IOException {
+			textArea.setText(textArea.getText() + new String(b));
+		}
+	};
+	
 	public WarpConsoleGUI() {
 		show = false;
 		gui = new GUIManager();
@@ -45,6 +66,8 @@ public class WarpConsoleGUI extends InputAdapter implements TextFieldFilter, Tex
 		table.add(textField).fillX();
 		
 		gui.addActor(table);
+		
+		WarpConsole.out = new PrintStream(output);
 	}
 	
 	private void toggle() {
@@ -110,8 +133,8 @@ public class WarpConsoleGUI extends InputAdapter implements TextFieldFilter, Tex
 	@Override
 	public void keyTyped(TextField textField, char c) {		
 		if(c == '\n' || c == '\r') {
-			textArea.setText(textArea.getText() + " > " + textField.getText() + "\n");
-			textArea.setText(textArea.getText() + console.executeCommand(textField.getText()).output + "\n");
+			WarpConsole.out.print(" > " + textField.getText() + "\n");
+			console.executeCommand(textField.getText());
 			textField.setText("");
 		}
 	}
