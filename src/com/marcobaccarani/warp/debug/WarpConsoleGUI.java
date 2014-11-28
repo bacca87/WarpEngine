@@ -3,8 +3,10 @@ package com.marcobaccarani.warp.debug;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
@@ -18,12 +20,19 @@ import com.marcobaccarani.warp.gui.GUIManager;
 
 public class WarpConsoleGUI extends InputAdapter implements TextFieldFilter, TextFieldListener {
 	private GUIManager gui;
+	
 	private boolean show;	
 	private boolean enabled = true;
+	
 	private Table table; 
 	private TextArea textArea;
 	private TextField textField;
-	private int toggleConsoleKey = '\\';
+	
+	private ArrayList<String> cmdHistory = new ArrayList<String>();
+	private int cmdHistoryIndex = 0;
+	
+	private int toggleConsoleKey = Input.Keys.BACKSLASH;
+	private String prompt = "] ";
 	
 	private WarpConsole console = new WarpConsole();
 	
@@ -31,16 +40,19 @@ public class WarpConsoleGUI extends InputAdapter implements TextFieldFilter, Tex
 		@Override
 		public void write(final int b) throws IOException {
 			textArea.setText(textArea.getText() + String.valueOf(b));
+			textArea.setCursorPosition(textArea.getText().length());
 		}
 
 		@Override
 		public void write(byte[] b, int off, int len) throws IOException {
 			textArea.setText(textArea.getText() + new String(b, off, len));
+			textArea.setCursorPosition(textArea.getText().length());
 		}
 
 		@Override
 		public void write(byte[] b) throws IOException {
 			textArea.setText(textArea.getText() + new String(b));
+			textArea.setCursorPosition(textArea.getText().length());
 		}
 	};
 	
@@ -51,8 +63,8 @@ public class WarpConsoleGUI extends InputAdapter implements TextFieldFilter, Tex
 		Skin consoleSkin = new Skin(Gdx.files.internal("com/marcobaccarani/warp/assets/skins/warpconsole.json"), new TextureAtlas(Gdx.files.internal("com/marcobaccarani/warp/assets/skins/warpconsole.atlas")));
 		
 		textArea = new TextArea("", consoleSkin);
-		textArea.setDisabled(true);		
-		
+		textArea.setDisabled(true);
+				
 		textField = new TextField("", consoleSkin);		
 		textField.setTextFieldFilter(this);
 		textField.setTextFieldListener(this);
@@ -112,8 +124,8 @@ public class WarpConsoleGUI extends InputAdapter implements TextFieldFilter, Tex
 	}
 	
 	@Override
-	public boolean keyTyped (char character) {		
-		if(enabled && character == toggleConsoleKey)
+	public boolean keyTyped (char character) {
+		if(enabled && Gdx.input.isKeyJustPressed(toggleConsoleKey))
 			toggle();
 		
 		return false;
@@ -121,7 +133,7 @@ public class WarpConsoleGUI extends InputAdapter implements TextFieldFilter, Tex
 
 	@Override
 	public boolean acceptChar(TextField textField, char c) {
-		if(c == toggleConsoleKey)
+		if(Gdx.input.isKeyJustPressed(toggleConsoleKey))
 		{
 			toggle();
 			return false;
@@ -131,11 +143,37 @@ public class WarpConsoleGUI extends InputAdapter implements TextFieldFilter, Tex
 	}
 
 	@Override
-	public void keyTyped(TextField textField, char c) {		
-		if(c == '\n' || c == '\r') {
-			WarpConsole.out.print(" > " + textField.getText() + "\n");
-			console.executeCommand(textField.getText());
+	public void keyTyped(TextField textField, char c) {
+		if(Gdx.input.isKeyJustPressed(Input.Keys.ENTER) && textField.getText().length() > 0) {
+			if(!cmdHistory.contains(textField.getText().trim()))
+				cmdHistory.add(0, textField.getText().trim());
+			
+			WarpConsole.out.print(prompt + textField.getText() + "\n");
+			console.executeCommand(textField.getText().trim());
 			textField.setText("");
 		}
+		
+		if(Gdx.input.isKeyPressed(Input.Keys.UP)) {
+			cmdHistoryIndex++;
+			if(cmdHistoryIndex >= cmdHistory.size())
+				cmdHistoryIndex = 0;
+			textField.setText(cmdHistory.get(cmdHistoryIndex));
+			textField.setCursorPosition(textField.getText().length());
+		} else if(Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
+			cmdHistoryIndex--;
+			if(cmdHistoryIndex < 0)
+				cmdHistoryIndex = cmdHistory.size() - 1;
+			
+			textField.setText(cmdHistory.get(cmdHistoryIndex));
+			textField.setCursorPosition(textField.getText().length());
+		}
+		else
+			cmdHistoryIndex = -1;
+		
+//		if(Gdx.input.isKeyPressed(Input.Keys.PAGE_UP)) {
+//			textArea.setCursorPosition(textArea.getCursorLine() - textArea.getLinesShowing());			
+//		} else if(Gdx.input.isKeyPressed(Input.Keys.PAGE_DOWN)) {
+//			textArea.setCursorPosition(textArea.getCursorLine() + textArea.getLinesShowing());
+//		}
 	}
 }
