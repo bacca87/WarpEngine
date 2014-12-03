@@ -42,8 +42,8 @@ public class WarpConsoleGUI implements TextFieldFilter {
 	private long PGUP_DelayStartTime = 0;
 	private long PGDOWN_DelayStartTime = 0;
 	private long inputRepeatStartTime = 0;
-	private long inputDelay = 500;
-	private long inputRepeatTime = 50;
+	private long inputDelay = 800;
+	private long inputRepeatTime = 100;
 	
 	private int speed = 2000;
 	
