@@ -16,13 +16,15 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextArea;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldFilter;
 import com.badlogic.gdx.utils.TimeUtils;
+import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.marcobaccarani.warp.WarpEngine;
 import com.marcobaccarani.warp.gui.GUIManager;
 
 public class WarpConsoleGUI implements TextFieldFilter {
 	private GUIManager gui;
 	
-	private boolean show;	
-	private boolean enabled = true;
+	private boolean show;
+	private float screenRatio = 0.5f;
 	
 	private Table table; 
 	private TextArea textArea;
@@ -32,6 +34,7 @@ public class WarpConsoleGUI implements TextFieldFilter {
 	private int cmdHistoryIndex;
 	
 	private int toggleConsoleKey = Input.Keys.BACKSLASH;
+	private char toggleConsoleChar = '\\';
 	private String prompt = "] ";
 	
 	private long UP_DelayStartTime = 0;
@@ -69,26 +72,26 @@ public class WarpConsoleGUI implements TextFieldFilter {
 	public WarpConsoleGUI() {
 		show = false;
 		gui = new GUIManager();
+		gui.setViewport(new FitViewport(WarpEngine.VIRTUAL_WIDTH, WarpEngine.VIRTUAL_HEIGHT));
 		
 		Skin consoleSkin = new Skin(Gdx.files.internal("com/marcobaccarani/warp/assets/skins/warpconsole.json"), new TextureAtlas(Gdx.files.internal("com/marcobaccarani/warp/assets/skins/warpconsole.atlas")));
 		
 		textArea = new TextArea("", consoleSkin);
 		textArea.setDisabled(true);
-				
-		textField = new TextField("", consoleSkin);		
-		textField.setTextFieldFilter(this);		
+		
+		textField = new TextField("", consoleSkin);
+		textField.setTextFieldFilter(this);
 		
 		Label label = new Label(prompt, consoleSkin);
 		
-		table = new Table();		
-		table.setHeight(Gdx.graphics.getHeight() * 0.5f);
-		table.setWidth(Gdx.graphics.getWidth());
-		table.setPosition(0, Gdx.graphics.getHeight());
-		
-		table.add(textArea).colspan(2).expand().fill();
+		table = new Table();
+		table.setFillParent(true);
+		table.add(textArea).prefSize(WarpEngine.VIRTUAL_WIDTH, WarpEngine.VIRTUAL_HEIGHT * screenRatio).colspan(2).fill();
 		table.row();
 		table.add(label);
-		table.add(textField).prefWidth(10000).fillX();
+		table.add(textField).prefWidth(WarpEngine.VIRTUAL_WIDTH);
+		table.top();
+		table.setPosition(0, WarpEngine.VIRTUAL_HEIGHT);
 		
 		gui.addActor(table);
 		
@@ -113,32 +116,35 @@ public class WarpConsoleGUI implements TextFieldFilter {
 		
 		handleInputs();
 		
-		if(show && table.getY() > Gdx.graphics.getHeight() / 2) {
+		if(show && table.getY() > 0) {
 			posY = table.getY() - delta * speed;
-			if(posY >= Gdx.graphics.getHeight() / 2)
+			if(posY >= 0)
 				table.setPosition(table.getX(), posY);
 			else
-				table.setPosition(table.getX(), Gdx.graphics.getHeight() / 2);
+				table.setPosition(table.getX(), 0);
 		}
 		
-		if(!show && table.getY() < Gdx.graphics.getHeight()) {
+		if(!show && table.getY() < WarpEngine.VIRTUAL_HEIGHT) {
 			posY = table.getY() + delta * speed;
-			if(posY <= Gdx.graphics.getHeight())
+			if(posY <= WarpEngine.VIRTUAL_HEIGHT)
 				table.setPosition(table.getX(), posY);
 			else
-				table.setPosition(table.getX(), Gdx.graphics.getHeight());
+				table.setPosition(table.getX(), WarpEngine.VIRTUAL_HEIGHT);
 		}
 	}
 	
 	private void handleInputs() {
 		int line;
 		
-		if(enabled && Gdx.input.isKeyJustPressed(toggleConsoleKey)) {			
+		if(Gdx.input.isKeyJustPressed(toggleConsoleKey)) {			
 			toggle();
 		}
 		
+		if(!show)
+			return;
+		
 		if(Gdx.input.isKeyJustPressed(Input.Keys.ENTER) && textField.getText().length() > 0) {
-			if(cmdHistory.size() == 0 || !textField.getText().trim().equals(cmdHistory.get(cmdHistory.size() - 1))) 
+			if(cmdHistory.size() == 0 || !textField.getText().trim().equals(cmdHistory.get(cmdHistory.size() - 1)))
 				cmdHistory.add(textField.getText().trim());			
 			
 			cmdHistoryIndex = cmdHistory.size();
@@ -181,6 +187,7 @@ public class WarpConsoleGUI implements TextFieldFilter {
 			
 			if(cmdHistoryIndex > cmdHistory.size() - 1) {
 				cmdHistoryIndex = cmdHistory.size();
+				textField.setText("");
 			}
 			else {
 				textField.setText(cmdHistory.get(cmdHistoryIndex));
@@ -197,7 +204,7 @@ public class WarpConsoleGUI implements TextFieldFilter {
 			if(PGUP_DelayStartTime != 0 && TimeUtils.millis() - PGUP_DelayStartTime < inputDelay)
 				return;
 			
-			line = textArea.getCursorLine() == textArea.getFirstLineShowing() ? 
+			line = textArea.getCursorLine() == textArea.getFirstLineShowing() ?
 				   textArea.getCursorLine() - textArea.getLinesShowing() :
 				   textArea.getCursorLine() - textArea.getLinesShowing() * 2 + 1;
 				   
@@ -213,8 +220,8 @@ public class WarpConsoleGUI implements TextFieldFilter {
 			if(PGDOWN_DelayStartTime != 0 && TimeUtils.millis() - PGDOWN_DelayStartTime < inputDelay)
 				return;
 			
-			line = textArea.getCursorLine() == textArea.getFirstLineShowing() ? 
-				   textArea.getCursorLine() + textArea.getLinesShowing() * 2 - 1: 
+			line = textArea.getCursorLine() == textArea.getFirstLineShowing() ?
+				   textArea.getCursorLine() + textArea.getLinesShowing() * 2 - 1:
 				   textArea.getCursorLine() + textArea.getLinesShowing();
 				   
 			textArea.moveCursorLine(line >= textArea.getLines() ? textArea.getLines() - 1 : line);
@@ -227,13 +234,17 @@ public class WarpConsoleGUI implements TextFieldFilter {
 	}
 	
 	public void render() {
-		update(Gdx.graphics.getDeltaTime());
+		update(Gdx.graphics.getDeltaTime());		
 		gui.render();
+	}
+	
+	public void resize(int width, int height) {
+		gui.resize(width, height);		
 	}
 	
 	@Override
 	public boolean acceptChar(TextField textField, char c) {
-		if(Gdx.input.isKeyJustPressed(toggleConsoleKey))
+		if(c == toggleConsoleChar)
 			return false;
 		
 		return true;

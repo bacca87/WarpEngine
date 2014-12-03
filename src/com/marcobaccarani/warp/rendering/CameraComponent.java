@@ -1,25 +1,21 @@
 package com.marcobaccarani.warp.rendering;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.utils.viewport.Viewport;
 import com.marcobaccarani.warp.ecs.Component;
 
 public class CameraComponent extends Component {
-	private OrthographicCamera camera;
+	private Viewport viewport;
 	
-	public CameraComponent() {
-		camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-	}
-	
-	public CameraComponent(int width, int height) {
-		camera = new OrthographicCamera(width, height);
-	}
-	
-	public CameraComponent(OrthographicCamera camera) {
-		this.camera = camera;
+	public CameraComponent(Viewport viewport) {
+		this.viewport = viewport;
 	}
 	
 	public OrthographicCamera getCamera() {
-		return camera;
+		return (OrthographicCamera) viewport.getCamera();
+	}
+	
+	public Viewport getViewport() {
+		return viewport;
 	}
 }

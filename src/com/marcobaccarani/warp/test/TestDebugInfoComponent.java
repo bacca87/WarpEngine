@@ -7,6 +7,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
+import com.marcobaccarani.warp.WarpEngine;
 import com.marcobaccarani.warp.ecs.Component;
 import com.marcobaccarani.warp.gui.GUIComponent;
 
@@ -30,7 +31,7 @@ public class TestDebugInfoComponent extends Component {
 		entitiesLabel.setColor(Color.MAGENTA);
 		
 		Table table = new Table();		
-		table.setPosition(Gdx.graphics.getWidth() - 75, Gdx.graphics.getHeight() - 45);		
+		table.setPosition(WarpEngine.VIRTUAL_WIDTH - 75, WarpEngine.VIRTUAL_HEIGHT - 45);		
 		table.debug();
 		table.add(fpsLabel).align(Align.right);
 		table.row();

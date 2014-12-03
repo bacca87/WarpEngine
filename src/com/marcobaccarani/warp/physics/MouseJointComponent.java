@@ -81,10 +81,10 @@ public class MouseJointComponent extends Component implements InputProcessor{
 		if(camera == null)
 			return false;
 		
-		camera.getCamera().unproject(mousePosition.set(screenX, screenY, 0));
+		camera.getViewport().unproject(mousePosition.set(screenX, screenY, 0));
 		mousePosition.scl(b2dManager.getWorldToBox2DRatio());
 		
-		if (button == Input.Buttons.LEFT) 
+		if (button == Input.Buttons.LEFT)
 			b2dManager.queryAABB(jointCallback, mousePosition.x, mousePosition.y, mousePosition.x, mousePosition.y);            
 		else
 			b2dManager.queryAABB(pushCallback, mousePosition.x, mousePosition.y, mousePosition.x, mousePosition.y);
@@ -107,7 +107,7 @@ public class MouseJointComponent extends Component implements InputProcessor{
 		if(mouseJoint == null || camera == null)
 			return false;
 		
-		camera.getCamera().unproject(mousePosition.set(screenX, screenY, 0));
+		camera.getViewport().unproject(mousePosition.set(screenX, screenY, 0));
 		mouseJoint.setTarget(targetPosition.set(mousePosition.x, mousePosition.y).scl(b2dManager.getWorldToBox2DRatio()));
 		return true;
 	}
