@@ -1,18 +1,21 @@
 {
 com.badlogic.gdx.graphics.g2d.BitmapFont: { default-font: { file: com/badlogic/gdx/utils/arial-15.fnt } },
 com.badlogic.gdx.graphics.Color: {
-	green: { a: 1, b: 0, g: 1, r: 0 },
-	white: { a: 1, b: 1, g: 1, r: 1 },
-	red: { a: 1, b: 0, g: 0, r: 1 },
-	black: { a: 1, b: 0, g: 0, r: 0 }
+	white: { r: 1, g: 1, b: 1, a: 1 },	
+	console: { r: 1, g: 0, b: 0, a: 0.5 },
 },
 com.badlogic.gdx.scenes.scene2d.ui.Skin$TintedDrawable: {
-	consolebackground: { name: white, color: { r: 1, g: 0, b: 0, a: 0.45 } }
+	bgtextarea: { name: bg_textarea, color: console },
+	bgtextfield: { name: bg_textfield, color: console },
+	bglabel: { name: bg_label, color: console }
 },
 com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
-	default: { font: default-font, fontColor: white, background: consolebackground }
+	default: { font: default-font, fontColor: white, background: bglabel }
 },
 com.badlogic.gdx.scenes.scene2d.ui.TextField$TextFieldStyle: {
-	default: { selection: selection, background: consolebackground, font: default-font, fontColor: white, cursor: cursor }
+	default: { selection: selection, background: bg_textarea, font: default-font, fontColor: white, cursor: cursor }
+},
+com.badlogic.gdx.scenes.scene2d.ui.TextField$TextFieldStyle: {
+	default: { selection: selection, background: bgtextfield, font: default-font, fontColor: white, cursor: cursor }
 },
 }

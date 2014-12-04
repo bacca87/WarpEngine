@@ -83,10 +83,11 @@ public class WarpConsoleGUI implements TextFieldFilter {
 		Label label = new Label(prompt, consoleSkin);
 		
 		table = new Table();
+		//table.setDebug(true);
 		table.setFillParent(true);
 		table.add(textArea).prefSize(WarpEngine.VIRTUAL_WIDTH, WarpEngine.VIRTUAL_HEIGHT * screenRatio).colspan(2).fill();
 		table.row();
-		table.add(label);
+		table.add(label).fillY();
 		table.add(textField).prefWidth(WarpEngine.VIRTUAL_WIDTH);
 		table.top();
 		table.setPosition(0, WarpEngine.VIRTUAL_HEIGHT);
