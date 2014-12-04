@@ -15,7 +15,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextArea;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldFilter;
-import com.badlogic.gdx.utils.TimeUtils;
+import com.badlogic.gdx.utils.Timer;
+import com.badlogic.gdx.utils.Timer.Task;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.marcobaccarani.warp.WarpEngine;
 import com.marcobaccarani.warp.gui.GUIManager;
@@ -37,17 +38,14 @@ public class WarpConsoleGUI implements TextFieldFilter {
 	private char toggleConsoleChar = '\\';
 	private String prompt = "] ";
 	
-	private long UP_DelayStartTime = 0;
-	private long DOWN_DelayStartTime = 0;
-	private long PGUP_DelayStartTime = 0;
-	private long PGDOWN_DelayStartTime = 0;
-	private long inputRepeatStartTime = 0;
-	private long inputDelay = 800;
-	private long inputRepeatTime = 100;
+	private float keyRepeatInitialTime = 0.4f;
+	private float keyRepeatTime = 0.08f;
 	
 	private int speed = 2000;
 	
 	private WarpConsole console = new WarpConsole();
+	
+	private KeyRepeatTask keyRepeatTask = new KeyRepeatTask(); 
 	
 	private final OutputStream output = new OutputStream() {
 		@Override
@@ -132,9 +130,9 @@ public class WarpConsoleGUI implements TextFieldFilter {
 				table.setPosition(table.getX(), WarpEngine.VIRTUAL_HEIGHT);
 		}
 	}
-	
+		
 	private void handleInputs() {
-		int line;
+		int keypressed = 0;
 		
 		if(Gdx.input.isKeyJustPressed(toggleConsoleKey)) {			
 			toggle();
@@ -145,7 +143,7 @@ public class WarpConsoleGUI implements TextFieldFilter {
 		
 		if(Gdx.input.isKeyJustPressed(Input.Keys.ENTER) && textField.getText().length() > 0) {
 			if(cmdHistory.size() == 0 || !textField.getText().trim().equals(cmdHistory.get(cmdHistory.size() - 1)))
-				cmdHistory.add(textField.getText().trim());			
+				cmdHistory.add(textField.getText().trim());
 			
 			cmdHistoryIndex = cmdHistory.size();
 			
@@ -153,16 +151,31 @@ public class WarpConsoleGUI implements TextFieldFilter {
 			console.executeCommand(textField.getText().trim());
 			textField.setText("");
 		}
-				
-		if(TimeUtils.millis() - inputRepeatStartTime < inputRepeatTime) 
-			return;
-		else
-			inputRepeatStartTime = TimeUtils.millis();
 		
-		if(Gdx.input.isKeyPressed(Input.Keys.UP)) {
-			if(UP_DelayStartTime != 0 && TimeUtils.millis() - UP_DelayStartTime < inputDelay)
-				return;
-			
+		if(Gdx.input.isKeyPressed(Input.Keys.UP))
+			keypressed = Input.Keys.UP;		
+		if(Gdx.input.isKeyPressed(Input.Keys.DOWN))
+			keypressed = keypressed == 0 ? Input.Keys.DOWN : 0;
+		if(Gdx.input.isKeyPressed(Input.Keys.PAGE_UP))
+			keypressed = keypressed == 0 ? Input.Keys.PAGE_UP : 0;
+		if(Gdx.input.isKeyPressed(Input.Keys.PAGE_DOWN))
+			keypressed = keypressed == 0 ? Input.Keys.PAGE_DOWN : 0;
+		
+		if(keypressed != 0 && (!keyRepeatTask.isScheduled() || keyRepeatTask.keycode != keypressed)) {
+			keyDown(keypressed);
+			keyRepeatTask.keycode = keypressed;
+			keyRepeatTask.cancel();
+			Timer.schedule(keyRepeatTask, keyRepeatInitialTime, keyRepeatTime);
+		}
+		else if(keypressed == 0 && keyRepeatTask.isScheduled())		
+			keyRepeatTask.cancel();
+	}
+	
+	private void keyDown(int keycode) {
+		int line;
+		
+		switch(keycode)	{
+		case Input.Keys.UP:
 			cmdHistoryIndex--;
 			
 			if(cmdHistoryIndex < 0) {
@@ -172,17 +185,9 @@ public class WarpConsoleGUI implements TextFieldFilter {
 				textField.setText(cmdHistory.get(cmdHistoryIndex));
 				textField.setCursorPosition(textField.getText().length());
 			}
+			break;
 			
-			if(UP_DelayStartTime == 0)
-				UP_DelayStartTime = TimeUtils.millis();
-		}
-		else
-			UP_DelayStartTime = 0;
-			
-		if(Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
-			if(DOWN_DelayStartTime != 0 && TimeUtils.millis() - DOWN_DelayStartTime < inputDelay)
-				return;
-			
+		case Input.Keys.DOWN:
 			cmdHistoryIndex++;
 			
 			if(cmdHistoryIndex > cmdHistory.size() - 1) {
@@ -193,44 +198,24 @@ public class WarpConsoleGUI implements TextFieldFilter {
 				textField.setText(cmdHistory.get(cmdHistoryIndex));
 				textField.setCursorPosition(textField.getText().length());
 			}
+			break;
 			
-			if(DOWN_DelayStartTime == 0)
-				DOWN_DelayStartTime = TimeUtils.millis();
-		}
-		else 
-			DOWN_DelayStartTime = 0;
-		
-		if(Gdx.input.isKeyPressed(Input.Keys.PAGE_UP)) {
-			if(PGUP_DelayStartTime != 0 && TimeUtils.millis() - PGUP_DelayStartTime < inputDelay)
-				return;
-			
+		case Input.Keys.PAGE_UP:
 			line = textArea.getCursorLine() == textArea.getFirstLineShowing() ?
 				   textArea.getCursorLine() - textArea.getLinesShowing() :
 				   textArea.getCursorLine() - textArea.getLinesShowing() * 2 + 1;
-				   
+					   
 			textArea.moveCursorLine(line < 0 ? 0 : line);
+			break;
 			
-			if(PGUP_DelayStartTime == 0)
-				PGUP_DelayStartTime = TimeUtils.millis();
-		}
-		else 
-			PGUP_DelayStartTime = 0;
-		
-		if(Gdx.input.isKeyPressed(Input.Keys.PAGE_DOWN)) {
-			if(PGDOWN_DelayStartTime != 0 && TimeUtils.millis() - PGDOWN_DelayStartTime < inputDelay)
-				return;
-			
+		case Input.Keys.PAGE_DOWN:
 			line = textArea.getCursorLine() == textArea.getFirstLineShowing() ?
 				   textArea.getCursorLine() + textArea.getLinesShowing() * 2 - 1:
 				   textArea.getCursorLine() + textArea.getLinesShowing();
-				   
+					   
 			textArea.moveCursorLine(line >= textArea.getLines() ? textArea.getLines() - 1 : line);
-			
-			if(PGDOWN_DelayStartTime == 0)
-				PGDOWN_DelayStartTime = TimeUtils.millis();
+			break;
 		}
-		else
-			PGDOWN_DelayStartTime = 0;
 	}
 	
 	public void render() {
@@ -248,5 +233,13 @@ public class WarpConsoleGUI implements TextFieldFilter {
 			return false;
 		
 		return true;
+	}
+		
+	class KeyRepeatTask extends Task {
+		int keycode;
+
+		public void run () {
+			keyDown(keycode);
+		}
 	}
 }
