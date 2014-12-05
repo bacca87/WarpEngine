@@ -2,7 +2,7 @@
 com.badlogic.gdx.graphics.g2d.BitmapFont: { default-font: { file: com/badlogic/gdx/utils/arial-15.fnt } },
 com.badlogic.gdx.graphics.Color: {
 	white: { r: 1, g: 1, b: 1, a: 1 },	
-	console: { r: 1, g: 0, b: 0, a: 0.5 },
+	console: { r: 1, g: 1, b: 1, a: 0.75 },
 },
 com.badlogic.gdx.scenes.scene2d.ui.Skin$TintedDrawable: {
 	bgtextarea: { name: bg_textarea, color: console },
@@ -13,9 +13,7 @@ com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
 	default: { font: default-font, fontColor: white, background: bglabel }
 },
 com.badlogic.gdx.scenes.scene2d.ui.TextField$TextFieldStyle: {
-	default: { selection: selection, background: bg_textarea, font: default-font, fontColor: white, cursor: cursor }
-},
-com.badlogic.gdx.scenes.scene2d.ui.TextField$TextFieldStyle: {
-	default: { selection: selection, background: bgtextfield, font: default-font, fontColor: white, cursor: cursor }
+	textarea: { selection: selection, background: bgtextarea, font: default-font, fontColor: white, cursor: cursor },
+	textfield: { selection: selection, background: bgtextfield, font: default-font, fontColor: white, cursor: cursor }
 },
 }

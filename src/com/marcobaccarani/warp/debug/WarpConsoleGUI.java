@@ -22,6 +22,7 @@ import com.marcobaccarani.warp.WarpEngine;
 import com.marcobaccarani.warp.gui.GUIManager;
 
 public class WarpConsoleGUI implements TextFieldFilter {
+	private WarpConsole console = new WarpConsole();
 	private GUIManager gui;
 	
 	private boolean show;
@@ -36,14 +37,12 @@ public class WarpConsoleGUI implements TextFieldFilter {
 	
 	private int toggleConsoleKey = Input.Keys.BACKSLASH;
 	private char toggleConsoleChar = '\\';
-	private String prompt = "] ";
-	
+	private String prompt = "] ";	
 	private float keyRepeatInitialTime = 0.4f;
-	private float keyRepeatTime = 0.08f;
-	
+	private float keyRepeatTime = 0.08f;	
 	private int speed = 2000;
-	
-	private WarpConsole console = new WarpConsole();
+	private int cmdMaxLength = 1024;
+	private int unusedLines = 0;
 	
 	private KeyRepeatTask keyRepeatTask = new KeyRepeatTask(); 
 	
@@ -51,19 +50,19 @@ public class WarpConsoleGUI implements TextFieldFilter {
 		@Override
 		public void write(final int b) throws IOException {
 			textArea.setText(textArea.getText() + String.valueOf(b));
-			textArea.setCursorPosition(textArea.getText().length());
+			textArea.setCursorPosition(textArea.getText().endsWith("\n") ? textArea.getText().length() - 1 : textArea.getText().length());
 		}
 
 		@Override
 		public void write(byte[] b, int off, int len) throws IOException {
 			textArea.setText(textArea.getText() + new String(b, off, len));
-			textArea.setCursorPosition(textArea.getText().length());
+			textArea.setCursorPosition(textArea.getText().endsWith("\n") ? textArea.getText().length() - 1 : textArea.getText().length());
 		}
 
 		@Override
 		public void write(byte[] b) throws IOException {
 			textArea.setText(textArea.getText() + new String(b));
-			textArea.setCursorPosition(textArea.getText().length());
+			textArea.setCursorPosition(textArea.getText().endsWith("\n") ? textArea.getText().length() - 1 : textArea.getText().length());
 		}
 	};
 	
@@ -74,16 +73,16 @@ public class WarpConsoleGUI implements TextFieldFilter {
 		
 		Skin consoleSkin = new Skin(Gdx.files.internal("com/marcobaccarani/warp/assets/skins/warpconsole.json"), new TextureAtlas(Gdx.files.internal("com/marcobaccarani/warp/assets/skins/warpconsole.atlas")));
 		
-		textArea = new TextArea("", consoleSkin);
+		textArea = new TextArea("", consoleSkin, "textarea");
 		textArea.setDisabled(true);
 		
-		textField = new TextField("", consoleSkin);
+		textField = new TextField("", consoleSkin, "textfield");
 		textField.setTextFieldFilter(this);
+		textField.setMaxLength(cmdMaxLength);
 		
 		Label label = new Label(prompt, consoleSkin);
 		
 		table = new Table();
-		//table.setDebug(true);
 		table.setFillParent(true);
 		table.add(textArea).prefSize(WarpEngine.VIRTUAL_WIDTH, WarpEngine.VIRTUAL_HEIGHT * screenRatio).colspan(2).fill();
 		table.row();
@@ -95,6 +94,19 @@ public class WarpConsoleGUI implements TextFieldFilter {
 		gui.addActor(table);
 		
 		WarpConsole.out = new PrintStream(output);
+		
+		// insert newline to give the effect of sliding from the bottom upwards
+		gui.render();
+		unusedLines = textArea.getLinesShowing();
+		for(int i = 0; i < unusedLines; i++)
+			WarpConsole.out.print("\n");
+		
+		console.addCommand("quit", new WarpCommand() {
+			@Override
+			public void executeCommand(String[] args) {
+				Gdx.app.exit();				
+			}
+		});
 	}
 	
 	private void toggle() {
@@ -134,6 +146,7 @@ public class WarpConsoleGUI implements TextFieldFilter {
 		
 	private void handleInputs() {
 		int keypressed = 0;
+		int lastTextLenght = 0;
 		
 		if(Gdx.input.isKeyJustPressed(toggleConsoleKey)) {			
 			toggle();
@@ -148,13 +161,19 @@ public class WarpConsoleGUI implements TextFieldFilter {
 			
 			cmdHistoryIndex = cmdHistory.size();
 			
-			WarpConsole.out.print(prompt + textField.getText() + "\n");
+			WarpConsole.out.print(prompt + textField.getText() + "\n");			
+			lastTextLenght = textArea.getText().length();
+			
 			console.executeCommand(textField.getText().trim());
+			
+			if(lastTextLenght != textArea.getText().length())
+				WarpConsole.out.print("\n");
+			
 			textField.setText("");
 		}
 		
 		if(Gdx.input.isKeyPressed(Input.Keys.UP))
-			keypressed = Input.Keys.UP;		
+			keypressed = Input.Keys.UP;
 		if(Gdx.input.isKeyPressed(Input.Keys.DOWN))
 			keypressed = keypressed == 0 ? Input.Keys.DOWN : 0;
 		if(Gdx.input.isKeyPressed(Input.Keys.PAGE_UP))
@@ -206,21 +225,22 @@ public class WarpConsoleGUI implements TextFieldFilter {
 				   textArea.getCursorLine() - textArea.getLinesShowing() :
 				   textArea.getCursorLine() - textArea.getLinesShowing() * 2 + 1;
 					   
-			textArea.moveCursorLine(line < 0 ? 0 : line);
+			textArea.moveCursorLine(line < unusedLines ? unusedLines : line);
 			break;
 			
 		case Input.Keys.PAGE_DOWN:
 			line = textArea.getCursorLine() == textArea.getFirstLineShowing() ?
 				   textArea.getCursorLine() + textArea.getLinesShowing() * 2 - 1:
 				   textArea.getCursorLine() + textArea.getLinesShowing();
-					   
-			textArea.moveCursorLine(line >= textArea.getLines() ? textArea.getLines() - 1 : line);
+			
+			textArea.moveCursorLine(line >= textArea.getLines() ? textArea.getLines() - 2 : line);
 			break;
 		}
 	}
 	
 	public void render() {
-		update(Gdx.graphics.getDeltaTime());		
+		gui.update(Gdx.graphics.getDeltaTime());
+		update(Gdx.graphics.getDeltaTime());
 		gui.render();
 	}
 	

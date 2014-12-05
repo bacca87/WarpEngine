@@ -39,5 +39,7 @@ public final class WarpConsole {
 		
 		if(args.length > 0 && commands.containsKey(args[0]))
 			commands.get(args[0]).executeCommand(args);
+		else
+			out.print("Error: Unknown command!");
 	}	
 }
