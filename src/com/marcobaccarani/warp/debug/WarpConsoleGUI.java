@@ -9,28 +9,30 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextArea;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
+import com.badlogic.gdx.scenes.scene2d.ui.WarpTextField;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldFilter;
+import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.Timer.Task;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.marcobaccarani.warp.WarpEngine;
-import com.marcobaccarani.warp.gui.GUIManager;
 
-public class WarpConsoleGUI implements TextFieldFilter {
+public class WarpConsoleGUI implements TextFieldFilter, Disposable {
 	private WarpConsole console = new WarpConsole();
-	private GUIManager gui;
+	private Stage stage;
 	
 	private boolean show;
 	private float screenRatio = 0.5f;
 	
 	private Table table; 
 	private TextArea textArea;
-	private TextField textField;
+	private WarpTextField textField;
 	
 	private ArrayList<String> cmdHistory = new ArrayList<String>();
 	private int cmdHistoryIndex;
@@ -39,7 +41,7 @@ public class WarpConsoleGUI implements TextFieldFilter {
 	private char toggleConsoleChar = '\\';
 	private String prompt = "] ";	
 	private float keyRepeatInitialTime = 0.4f;
-	private float keyRepeatTime = 0.08f;	
+	private float keyRepeatTime = 0.08f;
 	private int speed = 2000;
 	private int cmdMaxLength = 1024;
 	private int unusedLines = 0;
@@ -68,18 +70,18 @@ public class WarpConsoleGUI implements TextFieldFilter {
 	
 	public WarpConsoleGUI() {
 		show = false;
-		gui = new GUIManager();
-		gui.setViewport(new FitViewport(WarpEngine.VIRTUAL_WIDTH, WarpEngine.VIRTUAL_HEIGHT));
+		stage = new Stage();
+		stage.setViewport(new FitViewport(WarpEngine.VIRTUAL_WIDTH, WarpEngine.VIRTUAL_HEIGHT));
 		
-		Skin consoleSkin = new Skin(Gdx.files.internal("com/marcobaccarani/warp/assets/skins/warpconsole.json"), new TextureAtlas(Gdx.files.internal("com/marcobaccarani/warp/assets/skins/warpconsole.atlas")));
+		Skin consoleSkin = new Skin(Gdx.files.internal("data/skins/warpconsole.json"), new TextureAtlas(Gdx.files.internal("data/skins/warpconsole.atlas")));
 		
 		textArea = new TextArea("", consoleSkin, "textarea");
 		textArea.setDisabled(true);
 		
-		textField = new TextField("", consoleSkin, "textfield");
+		textField = new WarpTextField("", consoleSkin, "textfield");
 		textField.setTextFieldFilter(this);
 		textField.setMaxLength(cmdMaxLength);
-		
+				
 		Label label = new Label(prompt, consoleSkin);
 		
 		table = new Table();
@@ -91,12 +93,12 @@ public class WarpConsoleGUI implements TextFieldFilter {
 		table.top();
 		table.setPosition(0, WarpEngine.VIRTUAL_HEIGHT);
 		
-		gui.addActor(table);
+		stage.addActor(table);
 		
 		WarpConsole.out = new PrintStream(output);
 		
 		// insert newline to give the effect of sliding from the bottom upwards
-		gui.render();
+		stage.draw();
 		unusedLines = textArea.getLinesShowing();
 		for(int i = 0; i < unusedLines; i++)
 			WarpConsole.out.print("\n");
@@ -113,13 +115,13 @@ public class WarpConsoleGUI implements TextFieldFilter {
 		show = !show;
 		
 		if(show)
-			gui.setFocus(textField);
+			stage.setKeyboardFocus(textField);
 		else
-			gui.unfocusAll();
+			stage.unfocusAll();
 	}
 	
 	public void setInput(InputMultiplexer input) {
-		gui.attachInputs(input);
+		input.addProcessor(0, stage);
 	}
 	
 	private void update(float delta) {
@@ -239,13 +241,13 @@ public class WarpConsoleGUI implements TextFieldFilter {
 	}
 	
 	public void render() {
-		gui.update(Gdx.graphics.getDeltaTime());
+		stage.act(Gdx.graphics.getDeltaTime());
 		update(Gdx.graphics.getDeltaTime());
-		gui.render();
+		stage.draw();
 	}
 	
 	public void resize(int width, int height) {
-		gui.resize(width, height);		
+		stage.getViewport().update(width, height, true);		
 	}
 	
 	@Override
@@ -256,11 +258,16 @@ public class WarpConsoleGUI implements TextFieldFilter {
 		return true;
 	}
 		
+	@Override
+	public void dispose() {
+		stage.dispose();
+	}
+	
 	class KeyRepeatTask extends Task {
 		int keycode;
 
 		public void run () {
 			keyDown(keycode);
 		}
-	}
+	}	
 }
