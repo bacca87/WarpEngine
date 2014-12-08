@@ -20,15 +20,15 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldFilter;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.Timer.Task;
-import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.marcobaccarani.warp.WarpEngine;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 public class WarpConsoleGUI implements TextFieldFilter, Disposable {
-	private WarpConsole console = new WarpConsole();
 	private Stage stage;
 	
 	private boolean show;
 	private float screenRatio = 0.5f;
+	private int screenWidth = 0;
+	private int screenHeight = 0;
 	
 	private Table table; 
 	private TextArea textArea;
@@ -70,8 +70,7 @@ public class WarpConsoleGUI implements TextFieldFilter, Disposable {
 	
 	public WarpConsoleGUI() {
 		show = false;
-		stage = new Stage();
-		stage.setViewport(new FitViewport(WarpEngine.VIRTUAL_WIDTH, WarpEngine.VIRTUAL_HEIGHT));
+		stage = new Stage(new ScreenViewport());
 		
 		Skin consoleSkin = new Skin(Gdx.files.internal("data/skins/warpconsole.json"), new TextureAtlas(Gdx.files.internal("data/skins/warpconsole.atlas")));
 		
@@ -81,17 +80,16 @@ public class WarpConsoleGUI implements TextFieldFilter, Disposable {
 		textField = new WarpTextField("", consoleSkin, "textfield");
 		textField.setTextFieldFilter(this);
 		textField.setMaxLength(cmdMaxLength);
-				
+		
 		Label label = new Label(prompt, consoleSkin);
 		
 		table = new Table();
 		table.setFillParent(true);
-		table.add(textArea).prefSize(WarpEngine.VIRTUAL_WIDTH, WarpEngine.VIRTUAL_HEIGHT * screenRatio).colspan(2).fill();
+		table.add(textArea).colspan(2).expandX().height(Gdx.graphics.getHeight() * screenRatio).fill();
 		table.row();
-		table.add(label).fillY();
-		table.add(textField).prefWidth(WarpEngine.VIRTUAL_WIDTH);
-		table.top();
-		table.setPosition(0, WarpEngine.VIRTUAL_HEIGHT);
+		table.add(label).fill();
+		table.add(textField).expandX().fill();
+		table.top();		
 		
 		stage.addActor(table);
 		
@@ -102,13 +100,6 @@ public class WarpConsoleGUI implements TextFieldFilter, Disposable {
 		unusedLines = textArea.getLinesShowing();
 		for(int i = 0; i < unusedLines; i++)
 			WarpConsole.out.print("\n");
-		
-		console.addCommand("quit", new WarpCommand() {
-			@Override
-			public void executeCommand(String[] args) {
-				Gdx.app.exit();				
-			}
-		});
 	}
 	
 	private void toggle() {
@@ -137,12 +128,12 @@ public class WarpConsoleGUI implements TextFieldFilter, Disposable {
 				table.setPosition(table.getX(), 0);
 		}
 		
-		if(!show && table.getY() < WarpEngine.VIRTUAL_HEIGHT) {
+		if(!show && table.getY() < screenHeight) {
 			posY = table.getY() + delta * speed;
-			if(posY <= WarpEngine.VIRTUAL_HEIGHT)
+			if(posY <= screenHeight)
 				table.setPosition(table.getX(), posY);
 			else
-				table.setPosition(table.getX(), WarpEngine.VIRTUAL_HEIGHT);
+				table.setPosition(table.getX(), screenHeight);
 		}
 	}
 		
@@ -166,7 +157,7 @@ public class WarpConsoleGUI implements TextFieldFilter, Disposable {
 			WarpConsole.out.print(prompt + textField.getText() + "\n");			
 			lastTextLenght = textArea.getText().length();
 			
-			console.executeCommand(textField.getText().trim());
+			WarpConsole.executeCommand(textField.getText().trim());
 			
 			if(lastTextLenght != textArea.getText().length())
 				WarpConsole.out.print("\n");
@@ -241,13 +232,25 @@ public class WarpConsoleGUI implements TextFieldFilter, Disposable {
 	}
 	
 	public void render() {
-		stage.act(Gdx.graphics.getDeltaTime());
 		update(Gdx.graphics.getDeltaTime());
+		
+		stage.getViewport().apply();
+		stage.act(Gdx.graphics.getDeltaTime());		
 		stage.draw();
 	}
 	
 	public void resize(int width, int height) {
-		stage.getViewport().update(width, height, true);		
+		screenWidth = width;
+		screenHeight = height;
+		
+		stage.getViewport().update(screenWidth, screenHeight, true);
+		
+		table.getCell(textArea).height(screenHeight * screenRatio);		
+		
+		if(show)
+			table.setPosition(0, 0);
+		else
+			table.setPosition(0, screenHeight);
 	}
 	
 	@Override

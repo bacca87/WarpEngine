@@ -1,6 +1,8 @@
 package com.marcobaccarani.warp.ecs;
 
-public abstract class Component {
+import com.badlogic.gdx.InputAdapter;
+
+public abstract class Component extends InputAdapter {
 	private boolean enabled = true;
 	
 	protected System system;

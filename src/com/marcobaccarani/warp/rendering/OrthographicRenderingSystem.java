@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.Comparator;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.utils.viewport.Viewport;
 import com.marcobaccarani.warp.ecs.Entity;
 import com.marcobaccarani.warp.ecs.EntityList;
 import com.marcobaccarani.warp.ecs.RenderingSystem;
@@ -28,10 +28,10 @@ public class OrthographicRenderingSystem extends RenderingSystem {
 	
 	private PainterSort sorting = new PainterSort();
 	private SpriteBatch batch = new SpriteBatch();
-	private Matrix4 projection;
+	private Viewport viewport;
 	
-	public OrthographicRenderingSystem(Matrix4 projection) {
-		this.projection = projection;
+	public OrthographicRenderingSystem(Viewport viewport) {
+		this.viewport = viewport;
 	}
 	
 	@Override
@@ -39,7 +39,8 @@ public class OrthographicRenderingSystem extends RenderingSystem {
 		if(newEntities)
 			Collections.sort(entities, sorting);
 		
-		batch.setProjectionMatrix(projection);
+		viewport.apply();
+		batch.setProjectionMatrix(viewport.getCamera().combined);
 		batch.begin();
 		
 		for(Entity entity : entities) {

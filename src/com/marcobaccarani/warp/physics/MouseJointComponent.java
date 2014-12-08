@@ -1,7 +1,6 @@
 package com.marcobaccarani.warp.physics;
 
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -14,7 +13,7 @@ import com.marcobaccarani.warp.ecs.Entity;
 import com.marcobaccarani.warp.rendering.CameraComponent;
 import com.marcobaccarani.warp.physics.B2DManager;
 
-public class MouseJointComponent extends Component implements InputProcessor{
+public class MouseJointComponent extends Component {
 	private B2DManager b2dManager;
 	
 	private MouseJointDef jointDef;
@@ -110,35 +109,5 @@ public class MouseJointComponent extends Component implements InputProcessor{
 		camera.getViewport().unproject(mousePosition.set(screenX, screenY, 0));
 		mouseJoint.setTarget(targetPosition.set(mousePosition.x, mousePosition.y).scl(b2dManager.getWorldToBox2DRatio()));
 		return true;
-	}
-
-	@Override
-	public boolean keyDown(int keycode) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean keyUp(int keycode) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean keyTyped(char character) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-	
-	@Override
-	public boolean mouseMoved(int screenX, int screenY) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean scrolled(int amount) {
-		// TODO Auto-generated method stub
-		return false;
 	}
 }
