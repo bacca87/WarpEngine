@@ -27,7 +27,7 @@ public final class WarpConsole {
 		}
 	};
 	
-	public static PrintStream out = new PrintStream(stdOut);	
+	public static PrintStream out = new PrintStream(stdOut);
 	private static Map<String, WarpCommand> commands = new HashMap<String, WarpCommand>();
 	
 	private WarpConsole() {
@@ -44,7 +44,12 @@ public final class WarpConsole {
 		String args[] = command.split(" ");
 		
 		if(args.length > 0 && commands.containsKey(args[0]))
-			commands.get(args[0]).executeCommand(args);
+			try {
+				commands.get(args[0]).executeCommand(args);
+			}
+			catch(Exception ex) {				
+				ex.printStackTrace(out);
+			}
 		else
 			out.print("Error: Unknown command!");
 	}
@@ -55,6 +60,8 @@ public final class WarpConsole {
 			public void executeCommand(String[] args) {
 				Map<String, WarpCommand> treeMap = new TreeMap<String, WarpCommand>(commands);
 				
+				WarpConsole.out.print("\nAll available commands listed below:\n\n");
+				
 				for(String key : treeMap.keySet()) {
 					WarpConsole.out.print(key + "\n");
 				}
@@ -63,7 +70,7 @@ public final class WarpConsole {
 		
 		WarpConsole.addCommand("quit", new WarpCommand() {
 			@Override
-			public void executeCommand(String[] args) {				
+			public void executeCommand(String[] args) {
 				Gdx.app.exit();
 			}
 		});
@@ -89,6 +96,13 @@ public final class WarpConsole {
 			@Override
 			public void executeCommand(String[] args) {
 				Gdx.graphics.setDisplayMode(Integer.parseInt(args[1]), Integer.parseInt(args[2]), Gdx.graphics.isFullscreen());
+			}
+		});
+		
+		WarpConsole.addCommand("tab", new WarpCommand() {
+			@Override
+			public void executeCommand(String[] args) {
+				WarpConsole.out.print("\ttab");
 			}
 		});
 	}

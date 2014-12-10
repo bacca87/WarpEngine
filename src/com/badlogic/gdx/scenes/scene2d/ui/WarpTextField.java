@@ -21,6 +21,14 @@ public class WarpTextField extends TextField {
 		super(text, style);
 	}
 	
+	public void appendText (String str) {
+		if (str == null) throw new IllegalArgumentException("text cannot be null.");
+
+		clearSelection();
+		cursor = text.length();
+		paste(str, onlyFontChars);
+	}
+	
 	protected InputListener createInputListener () {
 		return new WarpConsoleTextFieldClickListener();
 	}

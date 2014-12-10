@@ -13,8 +13,8 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextArea;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
+import com.badlogic.gdx.scenes.scene2d.ui.WarpTextArea;
 import com.badlogic.gdx.scenes.scene2d.ui.WarpTextField;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldFilter;
 import com.badlogic.gdx.utils.Disposable;
@@ -31,7 +31,7 @@ public class WarpConsoleGUI implements TextFieldFilter, Disposable {
 	private int screenHeight = 0;
 	
 	private Table table; 
-	private TextArea textArea;
+	private WarpTextArea textArea;
 	private WarpTextField textField;
 	
 	private ArrayList<String> cmdHistory = new ArrayList<String>();
@@ -39,7 +39,8 @@ public class WarpConsoleGUI implements TextFieldFilter, Disposable {
 	
 	private int toggleConsoleKey = Input.Keys.BACKSLASH;
 	private char toggleConsoleChar = '\\';
-	private String prompt = "] ";	
+	private String prompt = "] ";
+	private int tabSpaces = 8;
 	private float keyRepeatInitialTime = 0.4f;
 	private float keyRepeatTime = 0.08f;
 	private int speed = 2000;
@@ -50,20 +51,30 @@ public class WarpConsoleGUI implements TextFieldFilter, Disposable {
 	
 	private final OutputStream output = new OutputStream() {
 		@Override
-		public void write(final int b) throws IOException {
-			textArea.setText(textArea.getText() + String.valueOf(b));
-			textArea.setCursorPosition(textArea.getText().endsWith("\n") ? textArea.getText().length() - 1 : textArea.getText().length());
+		public void write(final int b) throws IOException {			
+			textArea.appendText(String.valueOf(b));
+			setCursorPosition();
 		}
 
 		@Override
 		public void write(byte[] b, int off, int len) throws IOException {
-			textArea.setText(textArea.getText() + new String(b, off, len));
-			textArea.setCursorPosition(textArea.getText().endsWith("\n") ? textArea.getText().length() - 1 : textArea.getText().length());
+			textArea.appendText(formatInputString(new String(b, off, len)));
+			setCursorPosition();
 		}
 
 		@Override
 		public void write(byte[] b) throws IOException {
-			textArea.setText(textArea.getText() + new String(b));
+			textArea.appendText(formatInputString(new String(b)));
+			setCursorPosition();
+		}
+		
+		private String formatInputString(String string) {
+			string = string.replace("\t", String.format("%"+ tabSpaces +"s", " "));
+			string = string.replace("\r\n", "\n");
+			return string;
+		}
+		
+		private void setCursorPosition() {
 			textArea.setCursorPosition(textArea.getText().endsWith("\n") ? textArea.getText().length() - 1 : textArea.getText().length());
 		}
 	};
@@ -74,7 +85,7 @@ public class WarpConsoleGUI implements TextFieldFilter, Disposable {
 		
 		Skin consoleSkin = new Skin(Gdx.files.internal("data/skins/warpconsole.json"), new TextureAtlas(Gdx.files.internal("data/skins/warpconsole.atlas")));
 		
-		textArea = new TextArea("", consoleSkin, "textarea");
+		textArea = new WarpTextArea("", consoleSkin, "textarea");		
 		textArea.setDisabled(true);
 		
 		textField = new WarpTextField("", consoleSkin, "textfield");
@@ -89,7 +100,7 @@ public class WarpConsoleGUI implements TextFieldFilter, Disposable {
 		table.row();
 		table.add(label).fill();
 		table.add(textField).expandX().fill();
-		table.top();		
+		table.top();
 		
 		stage.addActor(table);
 		
