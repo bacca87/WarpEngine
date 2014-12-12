@@ -15,14 +15,10 @@ public class OrthographicRenderingSystem extends RenderingSystem {
 		public int compare(Entity o1, Entity o2) {
 			if(o1.getLayerId() < o2.getLayerId())
 				return -1;
-			
-			if(o1.getLayerId() == o2.getLayerId())
-				return 0;
-			
-			if(o1.getLayerId() > o2.getLayerId())
+			else if(o1.getLayerId() > o2.getLayerId())
 				return 1;
-			
-			return 0;
+			else
+				return 0;
 		}
 	}
 	

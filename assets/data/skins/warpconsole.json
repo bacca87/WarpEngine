@@ -1,5 +1,5 @@
 {
-com.badlogic.gdx.graphics.g2d.BitmapFont: { default-font: { file: com/badlogic/gdx/utils/arial-15.fnt } },
+com.badlogic.gdx.graphics.g2d.BitmapFont: { default-font: { file: data/fonts/bitmapfonts/terminus-15.fnt } },
 com.badlogic.gdx.graphics.Color: {
 	white: { r: 1, g: 1, b: 1, a: 1 },	
 	console: { r: 1, g: 1, b: 1, a: 0.75 },

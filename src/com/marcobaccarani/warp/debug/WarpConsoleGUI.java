@@ -40,7 +40,7 @@ public class WarpConsoleGUI implements TextFieldFilter, Disposable {
 	private int toggleConsoleKey = Input.Keys.BACKSLASH;
 	private char toggleConsoleChar = '\\';
 	private String prompt = "] ";
-	private int tabSpaces = 8;
+	private int tabSpaces = 4;
 	private float keyRepeatInitialTime = 0.4f;
 	private float keyRepeatTime = 0.08f;
 	private int speed = 2000;
