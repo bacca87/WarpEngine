@@ -35,7 +35,6 @@ public class OrthographicRenderingSystem extends RenderingSystem {
 		if(newEntities)
 			Collections.sort(entities, sorting);
 		
-		viewport.apply();
 		batch.setProjectionMatrix(viewport.getCamera().combined);
 		batch.begin();
 		

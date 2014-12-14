@@ -8,12 +8,15 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics.DisplayMode;
 
-public final class WarpConsole {	
+public final class WarpConsole {
 	private static final OutputStream stdOut = new OutputStream() {
 		@Override
 		public void write(final int b) throws IOException {
@@ -22,36 +25,53 @@ public final class WarpConsole {
 		
 		@Override
 		public void write(byte[] b, int off, int len) throws IOException {
-			Gdx.app.log("[WarpConsole]", new String(b, off, len, "UTF-8"));
+			Gdx.app.log("[WarpConsole]", new String(b, off, len));
 		}
 		
 		@Override
 		public void write(byte[] b) throws IOException {
-			Gdx.app.log("[WarpConsole]", new String(b, "UTF-8"));
+			Gdx.app.log("[WarpConsole]", new String(b));
 		}
 	};
 	
 	public static PrintStream out = new PrintStream(stdOut);
 	private static Map<String, WarpCommand> commands = new HashMap<String, WarpCommand>();
+	private final static int commandMaxLenght = 30;
 	
 	private WarpConsole() {
 	}
 	
 	public static void addCommand(String name, WarpCommand command) {
-		if(!commands.containsKey(name))
-			commands.put(name, command);
-		else
-			 throw new IllegalArgumentException("Command \"" + name + "\" already exist!!!");
+		
+		if(name == null)
+			throw new IllegalArgumentException("The entity name can't be null!");
+		
+		if(name.length() > commandMaxLenght)
+			throw new IllegalArgumentException("The command name must be maximum 30 char long!");
+		
+		if(commands.containsKey(name))
+			throw new IllegalArgumentException("Command \"" + name + "\" already exist!");
+		
+		if(command == null)
+			throw new IllegalArgumentException("The command can't be null!");
+		
+		
+		commands.put(name, command);
 	}
 	
-	public static void executeCommand(String command) {
-		String args[] = command.split(" ");
+	public static void executeCommand(String command) {		
+		ArrayList<String> arglist = new ArrayList<String>();
+		String args[];
+		
+		Matcher m = Pattern.compile("([^\"]\\S*|\".+?\")\\s*").matcher(command);
+		while (m.find()) arglist.add(m.group(1).replace("\"", ""));		
+		args = arglist.toArray(new String[arglist.size()]);
 		
 		if(args.length > 0 && commands.containsKey(args[0]))
 			try {
 				commands.get(args[0]).executeCommand(args);
 			}
-			catch(Exception ex) {				
+			catch(Exception ex) {
 				ex.printStackTrace(out);
 			}
 		else
@@ -59,24 +79,48 @@ public final class WarpConsole {
 	}
 	
 	static {
-		WarpConsole.addCommand("list", new WarpCommand() {
+		WarpConsole.addCommand("list", new WarpCommand() {			
 			@Override
-			public void executeCommand(String[] args) {
+			public void executeCommand(String[] args) {				
 				Map<String, WarpCommand> treeMap = new TreeMap<String, WarpCommand>(commands);
 				
 				WarpConsole.out.print("\nAll available commands listed below:\n\n");
 				
-				for(String key : treeMap.keySet()) {
-					WarpConsole.out.print(key + "\n");
+				for(Entry<String, WarpCommand> entry : treeMap.entrySet()) {					
+					WarpConsole.out.print(String.format("%1$-" + commandMaxLenght + "s", entry.getKey()) + 
+							(entry.getValue().getDescription() == null ? "\n" : " - " + entry.getValue().getDescription().replace("\n", "").replace("\r", "") + "\n"));
 				}
+			}
+
+			@Override
+			public String getDescription() {
+				return "Show all available commands";
 			}
 		});
 		
 		WarpConsole.addCommand("quit", new WarpCommand() {
 			@Override
 			public void executeCommand(String[] args) {
-				WarpConsole.out.print("\nBye!");
-				Gdx.app.exit();
+				WarpConsole.out.print("\nBye :'(");
+				Gdx.app.exit();				
+			}
+
+			@Override
+			public String getDescription() {
+				return "Exit the game";
+			}
+		});
+				
+		WarpConsole.addCommand("echo", new WarpCommand() {
+			@Override
+			public void executeCommand(String[] args) {
+				for(int i = 1; i < args.length; i++)
+					WarpConsole.out.print(args[i] + " ");
+			}
+
+			@Override
+			public String getDescription() {
+				return "Echo text to console";
 			}
 		});
 		
@@ -91,8 +135,13 @@ public final class WarpConsole {
 					Gdx.graphics.setVSync(false);
 					break;
 				default:
-					WarpConsole.out.print("\nParameters:\n\t0: vsync OFF\n\t1: vsync ON\n");
+					WarpConsole.out.print("\nArguments:\n\t0: vsync OFF\n\t1: vsync ON\n");
 				}
+			}
+
+			@Override
+			public String getDescription() {
+				return "Enable/Disable vertical sync";
 			}
 		});
 		
@@ -208,22 +257,13 @@ public final class WarpConsole {
 						+ "\tr_displaymode list                                                - Show all available fullscreen display modes.\n"
 						+ "\nExample:\n\tr_displaymode 1920 1080 fullscreen\n\n");
 			}
+
+			@Override
+			public String getDescription() {
+				return "Set the display mode";
+			}
 		});
 		
-//		WarpConsole.addCommand("r_noborder", new WarpCommand() {
-//			@Override
-//			public void executeCommand(String[] args) {
-//				switch(args[1]) {
-//				case "1":
-//					System.setProperty("org.lwjgl.opengl.Window.undecorated", "true");
-//					break;
-//				case "0":
-//					System.setProperty("org.lwjgl.opengl.Window.undecorated", "false");
-//					break;
-//				default:
-//					WarpConsole.out.print("\nParameters:\n\t0: Window borders \n\t1: Fullscreen\n");
-//				}
-//			}
-//		});
+		//TODO: togliere i bordi alla finestra si puo fare solo prima di lanciare l'applicazione desktop, vedere come fare
 	}
 }

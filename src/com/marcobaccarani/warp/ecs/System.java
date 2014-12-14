@@ -86,7 +86,7 @@ public final class System implements Disposable {
 	}
 	
 	public void render() {		
-		renderingSystem.rendering(entities, newEntities);
+		if(renderingSystem != null) renderingSystem.rendering(entities, newEntities);
 	}
 	
 	@Override

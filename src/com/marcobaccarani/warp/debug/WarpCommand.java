@@ -1,5 +1,6 @@
 package com.marcobaccarani.warp.debug;
 
 public interface WarpCommand {
-	public void executeCommand(String[] args);	
+	public String getDescription();
+	public void executeCommand(String[] args);
 }

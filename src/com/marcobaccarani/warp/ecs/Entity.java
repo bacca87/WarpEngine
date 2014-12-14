@@ -82,7 +82,7 @@ public final class Entity {
 
 	public void setName(String name) {
 		if(name == null)
-			throw new IllegalArgumentException("the entity name can't be null!");
+			throw new IllegalArgumentException("The entity name can't be null!");
 		
 		this.name = name;
 	}
