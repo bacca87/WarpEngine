@@ -30,11 +30,11 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
+import com.marcobaccarani.warp.Utility;
 import com.marcobaccarani.warp.ecs.Component;
 import com.marcobaccarani.warp.ecs.Entity;
 import com.marcobaccarani.warp.ecs.EntityList;
 import com.marcobaccarani.warp.ecs.System;
-import com.marcobaccarani.warp.math.Utility;
 
 public class B2DManager implements ContactListener, Disposable {
 	// pixel to meter ratio

@@ -1,4 +1,4 @@
-package com.marcobaccarani.warp.math;
+package com.marcobaccarani.warp;
 
 import com.badlogic.gdx.math.Vector2;
 

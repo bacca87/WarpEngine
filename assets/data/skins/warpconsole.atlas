@@ -1,6 +1,6 @@
 
 warpconsole.png
-size: 256,64
+size: 128,64
 format: RGBA8888
 filter: Nearest,Nearest
 repeat: none
@@ -9,13 +9,6 @@ bg_label
   xy: 2, 14
   size: 32, 32
   split: 3, 0, 0, 10
-  orig: 32, 32
-  offset: 0, 0
-  index: -1
-bordo
-  rotate: false
-  xy: 2, 14
-  size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
@@ -36,13 +29,6 @@ bg_textarea
   orig: 32, 32
   offset: 0, 0
   index: -1
-console
-  rotate: false
-  xy: 36, 14
-  size: 32, 32
-  orig: 32, 32
-  offset: 0, 0
-  index: -1
 cursor
   rotate: false
   xy: 2, 2
@@ -53,13 +39,6 @@ cursor
 selection
   rotate: false
   xy: 70, 14
-  size: 32, 32
-  orig: 32, 32
-  offset: 0, 0
-  index: -1
-white
-  rotate: false
-  xy: 104, 14
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
