@@ -31,7 +31,7 @@ public class WarpConsoleGUI implements TextFieldFilter, Disposable {
 	private int screenHeight = 0;
 	
 	private Table table; 
-	private WarpTextArea textArea;
+	private static WarpTextArea textArea;
 	private WarpTextField textField;
 	
 	private ArrayList<String> cmdHistory = new ArrayList<String>();
@@ -45,7 +45,7 @@ public class WarpConsoleGUI implements TextFieldFilter, Disposable {
 	private float keyRepeatTime = 0.08f;
 	private int speed = 2000;
 	private int cmdMaxLength = 1024;
-	private int unusedLines = 0;
+	private static int unusedLines = 0;
 	
 	private KeyRepeatTask keyRepeatTask = new KeyRepeatTask(); 
 	
@@ -109,6 +109,13 @@ public class WarpConsoleGUI implements TextFieldFilter, Disposable {
 		// insert newline to give the effect of sliding from the bottom upwards
 		stage.draw();
 		unusedLines = textArea.getLinesShowing();
+		insertNewlines();
+	}
+	
+	private static void insertNewlines() {
+		if(textArea == null)
+			return;
+		
 		for(int i = 0; i < unusedLines; i++)
 			WarpConsole.out.print("\n");
 	}
@@ -283,5 +290,23 @@ public class WarpConsoleGUI implements TextFieldFilter, Disposable {
 		public void run () {
 			keyDown(keycode);
 		}
-	}	
+	}
+	
+	static {
+		WarpConsole.addCommand("clear", new WarpCommand() {
+			@Override
+			public void executeCommand(String[] args) {
+				if(textArea != null) {
+					textArea.moveCursorLine(0);
+					textArea.setText("");
+					insertNewlines();
+				}	
+			}
+
+			@Override
+			public String getDescription() {
+				return "Clear the console output";
+			}
+		});
+	}
 }

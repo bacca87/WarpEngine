@@ -31,7 +31,7 @@ public class OrthographicRenderingSystem extends RenderingSystem {
 	}
 	
 	@Override
-	public void rendering(EntityList entities, boolean newEntities) {
+	public void render(EntityList entities, boolean newEntities) {
 		if(newEntities)
 			Collections.sort(entities, sorting);
 		
@@ -39,7 +39,7 @@ public class OrthographicRenderingSystem extends RenderingSystem {
 		batch.begin();
 		
 		for(Entity entity : entities) {
-			render(entity, batch);
+			draw(entity, batch);
 		}
 		
 		batch.end();

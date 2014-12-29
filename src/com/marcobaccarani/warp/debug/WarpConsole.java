@@ -6,7 +6,6 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -35,7 +34,7 @@ public final class WarpConsole {
 	};
 	
 	public static PrintStream out = new PrintStream(stdOut);
-	private static Map<String, WarpCommand> commands = new HashMap<String, WarpCommand>();
+	private static Map<String, WarpCommand> commands = new TreeMap<String, WarpCommand>();
 	private final static int commandMaxLenght = 30;
 	
 	private WarpConsole() {
@@ -81,12 +80,10 @@ public final class WarpConsole {
 	static {
 		WarpConsole.addCommand("list", new WarpCommand() {			
 			@Override
-			public void executeCommand(String[] args) {				
-				Map<String, WarpCommand> treeMap = new TreeMap<String, WarpCommand>(commands);
-				
+			public void executeCommand(String[] args) {
 				WarpConsole.out.print("\nAll available commands listed below:\n\n");
 				
-				for(Entry<String, WarpCommand> entry : treeMap.entrySet()) {					
+				for(Entry<String, WarpCommand> entry : commands.entrySet()) {					
 					WarpConsole.out.print(String.format("%1$-" + commandMaxLenght + "s", entry.getKey()) + 
 							(entry.getValue().getDescription() == null ? "\n" : " - " + entry.getValue().getDescription().replace("\n", "").replace("\r", "") + "\n"));
 				}

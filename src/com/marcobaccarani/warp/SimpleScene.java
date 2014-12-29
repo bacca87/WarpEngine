@@ -33,7 +33,7 @@ public class SimpleScene implements GameScene {
 		camera.update();
 		
 		// render entities
-		viewport.apply();
+		if(viewport != null) viewport.apply();
 		system.render();
 	}
 	

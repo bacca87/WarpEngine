@@ -2,6 +2,7 @@ package com.marcobaccarani.warp;
 
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.marcobaccarani.warp.debug.WarpConsoleGUI;
 
 public abstract class WarpEngineGame implements ApplicationListener{
@@ -13,6 +14,9 @@ public abstract class WarpEngineGame implements ApplicationListener{
 	@Override
 	public final void create() {
 		//TODO: procedura inizializzazione warp engine
+		TextField.keyRepeatInitialTime = 0.4f;
+		TextField.keyRepeatTime = 0.05f;
+		
 		console = new WarpConsoleGUI();
 		
 		initialize();
