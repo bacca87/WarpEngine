@@ -1,31 +1,30 @@
+
 package com.marcobaccarani.warp;
 
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
-import com.marcobaccarani.warp.debug.WarpConsoleGUI;
 
-public abstract class WarpEngineGame implements ApplicationListener{
-	private WarpConsoleGUI console;
+public abstract class WarpEngineGame implements ApplicationListener {
+	private ConsoleGUI console;
 	private GameScene scene;
-	
-	public abstract void initialize();
-	
+
+	public abstract void initialize ();
+
 	@Override
-	public final void create() {
-		//TODO: procedura inizializzazione warp engine
+	public final void create () {
+		// TODO: procedura inizializzazione warp engine
 		TextField.keyRepeatInitialTime = 0.4f;
 		TextField.keyRepeatTime = 0.05f;
 		
-		console = new WarpConsoleGUI();
-		
+		console = new ConsoleGUI();
+
 		initialize();
 	}
-	
+
 	@Override
 	public void dispose () {
 		if (scene != null) scene.hide();
-		
 		console.dispose();
 	}
 
@@ -41,29 +40,32 @@ public abstract class WarpEngineGame implements ApplicationListener{
 
 	@Override
 	public void render () {
+		((InputManager) WarpEngine.input).update();
 		if (scene != null) scene.render(Gdx.graphics.getDeltaTime());
-		
 		console.render();
 	}
 
 	@Override
 	public void resize (int width, int height) {
 		if (scene != null) scene.resize(width, height);
-		
 		console.resize(width, height);
 	}
 
-	/** Sets the current screen. {@link GameScene#hide()} is called on any old screen, and {@link GameScene#show()} is called on the new
-	 * screen, if any.
+	/** Sets the current screen. {@link GameScene#hide()} is called on any old screen, and {@link GameScene#show()} is called on the
+	 * new screen, if any.
 	 * @param screen may be {@code null} */
 	public void setScene (GameScene gameScreen) {
-		if (this.scene != null) this.scene.hide();
-		this.scene = gameScreen;
-		if (this.scene != null) {
-			Gdx.input.setInputProcessor(this.scene.getInput());
-			console.setInput(this.scene.getInput());
-			this.scene.show();
-			this.scene.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		if (scene != null) {
+			scene.hide();
+			WarpEngine.input.removeInputProcessor(scene.getInput());
+		}
+
+		scene = gameScreen;
+
+		if (scene != null) {
+			WarpEngine.input.addInputProcessor(scene.getInput());
+			scene.show();
+			scene.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		}
 	}
 
