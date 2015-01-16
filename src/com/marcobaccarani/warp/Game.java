@@ -5,9 +5,9 @@ import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 
-public abstract class WarpEngineGame implements ApplicationListener {
+public abstract class Game implements ApplicationListener {
 	private ConsoleGUI console;
-	private GameScene scene;
+	private Scene scene;
 
 	public abstract void initialize ();
 
@@ -51,10 +51,10 @@ public abstract class WarpEngineGame implements ApplicationListener {
 		console.resize(width, height);
 	}
 
-	/** Sets the current screen. {@link GameScene#hide()} is called on any old screen, and {@link GameScene#show()} is called on the
+	/** Sets the current screen. {@link Scene#hide()} is called on any old screen, and {@link Scene#show()} is called on the
 	 * new screen, if any.
 	 * @param screen may be {@code null} */
-	public void setScene (GameScene gameScreen) {
+	public void setScene (Scene gameScreen) {
 		if (scene != null) {
 			scene.hide();
 			WarpEngine.input.removeInputProcessor(scene.getInput());
@@ -69,8 +69,8 @@ public abstract class WarpEngineGame implements ApplicationListener {
 		}
 	}
 
-	/** @return the currently active {@link GameScene}. */
-	public GameScene getGameScene () {
+	/** @return the currently active {@link Scene}. */
+	public Scene getGameScene () {
 		return scene;
 	}
 }

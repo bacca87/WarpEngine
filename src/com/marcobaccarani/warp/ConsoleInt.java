@@ -23,7 +23,7 @@ public final class ConsoleInt implements ConsoleVariable {
 				try {
 					setValue(Integer.parseInt(args[1]));
 				} catch (Exception ex) {
-					Console.out.println("Invalid integer.");
+					Console.out.println("Error: Invalid integer.");
 				}
 			}
 		});

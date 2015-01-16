@@ -7,7 +7,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.marcobaccarani.warp.ecs.System;
 
-public class SimpleScene implements GameScene {
+public class SimpleScene implements Scene {
 	private InputMultiplexer input;
 	private OrthographicCamera camera;
 	private Viewport viewport;

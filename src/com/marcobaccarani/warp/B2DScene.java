@@ -8,7 +8,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.marcobaccarani.warp.ecs.System;
 import com.marcobaccarani.warp.physics.B2DManager;
 
-public class B2DScene implements GameScene {
+public class B2DScene implements Scene {
 	private InputMultiplexer input;
 	private OrthographicCamera camera;
 	private Viewport viewport;

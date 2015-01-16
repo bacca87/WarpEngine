@@ -23,7 +23,7 @@ public class ConsoleFloat implements ConsoleVariable {
 					setValue(Float.parseFloat(args[1].replace(',', '.')));
 				} 
 				catch (Exception ex) {
-					Console.out.println("Invalid float.");
+					Console.out.println("Error: Invalid float.");
 				}
 			}
 		});

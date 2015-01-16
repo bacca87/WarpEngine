@@ -30,7 +30,7 @@ public final class ConsoleBool implements ConsoleVariable {
 					setValue(false);
 					return;
 				default:
-					Console.out.println("Invalid boolean.");
+					Console.out.println("Error: Invalid boolean.");
 				}
 			}
 		});

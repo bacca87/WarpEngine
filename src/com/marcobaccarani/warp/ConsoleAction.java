@@ -1,11 +1,12 @@
 
 package com.marcobaccarani.warp;
 
-public abstract class ConsoleAction {
-	public static final String KEYDOWN = "down";
-	public static final String KEYUP = "up";
+public class ConsoleAction {
+	public static final String KEYDOWN = "1";
+	public static final String KEYUP = "0";
 
 	private boolean keyDown = false;
+	private ActionListener listener = null;
 
 	public ConsoleAction (final String name, final String description) {
 		Console.addCommand(name, new Action() {
@@ -23,10 +24,17 @@ public abstract class ConsoleAction {
 
 				switch (args[1]) {
 				case KEYDOWN:
-					keyDown();
+					if (!isKeyDown()) {
+						keyDown = true;
+						if (listener != null) listener.keyDown();
+					}
 					break;
+
 				case KEYUP:
-					keyUp();
+					if (isKeyDown()) {
+						keyDown = false;
+						if (listener != null) listener.keyUp();
+					}
 					break;
 				default:
 					printError();
@@ -34,7 +42,7 @@ public abstract class ConsoleAction {
 			}
 
 			private void printError () {
-				Console.out.println("Arguments:\n\t" + KEYDOWN + ": Key down\n\t" + KEYUP + ": Key up");
+				Console.out.println("Arguments:\n\t" + KEYDOWN + ": Start\n\t" + KEYUP + ": Stop");
 			}
 		});
 	}
@@ -43,7 +51,11 @@ public abstract class ConsoleAction {
 		return keyDown;
 	}
 
-	public abstract void keyDown ();
+	public ActionListener getListener () {
+		return listener;
+	}
 
-	public abstract void keyUp ();
+	public void setListener (ActionListener listener) {
+		this.listener = listener;
+	}
 }
