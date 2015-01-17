@@ -1,11 +1,15 @@
 
 package com.marcobaccarani.warp;
 
+
 public class ConsoleCommand {
 	private CommandListener listener = null;
+	private String description;
 
 	public ConsoleCommand (final String name, final String description) {
-		Console.addCommand(name, new Action() {
+		this.description = description;
+		
+		Console.addCommand(name, new Command() {
 			@Override
 			public String getDescription () {
 				return description;
@@ -18,6 +22,10 @@ public class ConsoleCommand {
 		});
 	}
 
+	public String getDescription() {
+		return description;
+	}
+	
 	public CommandListener getListener () {
 		return listener;
 	}

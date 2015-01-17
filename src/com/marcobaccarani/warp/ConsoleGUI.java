@@ -30,7 +30,7 @@ class ConsoleGUI implements TextFieldFilter, Disposable {
 	private int screenHeight = 0;
 
 	private Table table;
-	private static TextArea textArea;
+	private TextArea textArea;
 	private TextField textField;
 
 	private ArrayList<String> cmdHistory = new ArrayList<String>();
@@ -44,7 +44,7 @@ class ConsoleGUI implements TextFieldFilter, Disposable {
 	private float keyRepeatTime = 0.08f;
 	private int speed = 2000;
 	private int cmdMaxLength = 1024;
-	private static int unusedLines = 0;
+	private int unusedLines = 0;
 
 	private KeyRepeatTask keyRepeatTask = new KeyRepeatTask();
 
@@ -79,6 +79,17 @@ class ConsoleGUI implements TextFieldFilter, Disposable {
 		}
 	};
 
+	private CommandListener clearListener = new CommandListener() {
+		@Override
+		public void execute (String[] args) {
+			if (textArea != null) {
+				textArea.moveCursorLine(0);
+				textArea.setText("");
+				insertNewlines();
+			}
+		}
+	};
+	
 	ConsoleGUI () {
 		show = false;
 		stage = new Stage(new ScreenViewport());
@@ -107,14 +118,15 @@ class ConsoleGUI implements TextFieldFilter, Disposable {
 		stage.addActor(table);
 
 		Console.out = new PrintStream(output);
+		EngineCommands.clear.setListener(clearListener);
 
 		// insert newline to give the effect of sliding from the bottom upwards
 		stage.draw();
 		unusedLines = textArea.getLinesShowing();
-		insertNewlines();
+		insertNewlines();		
 	}
 
-	private static void insertNewlines () {
+	private void insertNewlines () {
 		if (textArea == null) return;
 
 		for (int i = 0; i < unusedLines; i++)
@@ -269,23 +281,5 @@ class ConsoleGUI implements TextFieldFilter, Disposable {
 		public void run () {
 			keyDown(keycode);
 		}
-	}
-
-	static {
-		Console.addCommand("clear", new Command() {
-			@Override
-			public void execute (String[] args) {
-				if (textArea != null) {
-					textArea.moveCursorLine(0);
-					textArea.setText("");
-					insertNewlines();
-				}
-			}
-
-			@Override
-			public String getDescription () {
-				return "Clear the console output";
-			}
-		});
 	}
 }

@@ -1,5 +1,6 @@
 package com.marcobaccarani.warp;
 
+
 public class ConsoleString implements ConsoleVariable {
 	private String value;
 

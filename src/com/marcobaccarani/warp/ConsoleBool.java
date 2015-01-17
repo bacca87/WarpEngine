@@ -1,6 +1,7 @@
 
 package com.marcobaccarani.warp;
 
+
 public final class ConsoleBool implements ConsoleVariable {
 	private boolean value;
 

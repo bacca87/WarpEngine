@@ -35,7 +35,7 @@ public final class Console {
 	public static PrintStream out = new PrintStream(stdOut);
 	private static HashMap<String, Command> commands = new HashMap<String, Command>();
 	private static Pattern regex = Pattern.compile("([^\"]\\S*|\".+?\")\\s*");
-	private static final int commandMaxLenght = 30;
+	private static final int COMMAND_MAX_LENGHT = 30;
 
 	static {
 		EngineCommands.list.setListener(new CommandListener() {
@@ -44,10 +44,10 @@ public final class Console {
 				Map<String, Command> orderedCommands = new TreeMap<String, Command>();
 				orderedCommands.putAll(commands);
 	
-				Console.out.print("All available commands listed below:\n\n");
+				out.print("All available commands listed below:\n\n");
 	
 				for (Entry<String, Command> entry : orderedCommands.entrySet()) {
-					Console.out.print(String.format("%1$-" + commandMaxLenght + "s", entry.getKey())
+					out.print(String.format("%1$-" + Console.COMMAND_MAX_LENGHT + "s", entry.getKey())
 						+ (entry.getValue().getDescription() == null ? "\n" : " - "
 							+ entry.getValue().getDescription().replace("\n", "").replace("\r", "") + "\n"));
 				}
@@ -55,12 +55,12 @@ public final class Console {
 		});
 	}
 	
-	private Console () {
+	Console () {
 	}
 
 	static void addCommand (final String name, Command command) {
 		if (name == null) throw new IllegalArgumentException("The command name can't be null!");
-		if (name.length() > commandMaxLenght) throw new IllegalArgumentException("The command name must be maximum 30 char long!");
+		if (name.length() > COMMAND_MAX_LENGHT) throw new IllegalArgumentException("The command name must be maximum 30 char long!");
 		if (commands.containsKey(name)) throw new IllegalArgumentException("Command \"" + name + "\" already exist!");
 		if (command == null) throw new IllegalArgumentException("The command can't be null!");
 

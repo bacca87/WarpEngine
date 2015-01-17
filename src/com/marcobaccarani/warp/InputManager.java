@@ -18,8 +18,8 @@ import com.badlogic.gdx.utils.IntMap;
 import com.badlogic.gdx.utils.Pool;
 
 public final class InputManager implements Input {
-	static private HashMap<String, Integer> keys = new HashMap<String, Integer>();
-	static private IntMap<Binding> bindings = new IntMap<Binding>();
+	private HashMap<String, Integer> keys = new HashMap<String, Integer>();
+	private IntMap<Binding> bindings = new IntMap<Binding>();
 
 	private InputMultiplexer multiplexer = new InputMultiplexer();
 	private Array<InputEvent> events = new Array<InputEvent>();
@@ -73,7 +73,7 @@ public final class InputManager implements Input {
 		}
 	};
 
-	ControllerListener controllerListener = new ControllerAdapter() {
+	private ControllerListener controllerListener = new ControllerAdapter() {
 		@Override
 		public boolean buttonDown (Controller controller, int buttonCode) {
 			InputEvent event = eventsPool.obtain();
@@ -95,12 +95,49 @@ public final class InputManager implements Input {
 		}
 	};
 
+	private CommandListener bindListener = new CommandListener() {
+		@Override
+		public void execute (String[] args) {
+			if (args.length < 3) {
+				printHelp();
+				return;
+			}
+
+			Integer keyHash = keys.get(args[1].toUpperCase());
+
+			if (keyHash == null) {
+				Console.out.println("Error: Invalid KeyCode.");
+				return;
+			}
+
+			Command cmd = Console.getCommand(args[2]);
+
+			if (cmd == null) {
+				Console.out.println("Error: Command \"" + args[2] + "\" doesn't exist.");
+				Console.out.println("Type \"list\" for showing all available commands.");
+				return;
+			}
+
+			bindings.put(keyHash, new Binding(args[2], cmd));
+		}
+
+		private void printHelp () {
+			Console.out.println(EngineCommands.bind.getDescription());
+			Console.out.println("Usage:");
+			Console.out.println("\tbind [keycode] [command]");
+			Console.out.println("Example:");
+			Console.out.println("\tbind SPACE jump");
+		}
+	};
+
 	InputManager () {
 		initKeys();
 
 		Gdx.input.setInputProcessor(multiplexer);
 		Controllers.addListener(controllerListener);
 		addInputProcessor(inputListener);
+
+		EngineCommands.bind.setListener(bindListener);
 	}
 
 	void update () {
@@ -153,7 +190,7 @@ public final class InputManager implements Input {
 		Controllers.removeListener(listener);
 	}
 
-	private static int getKeyHash (int keyCode, KeyType type) {
+	private int getKeyHash (int keyCode, KeyType type) {
 		return keyCode + type.hashCode();
 	}
 
@@ -301,49 +338,6 @@ public final class InputManager implements Input {
 			keys.put("BUTTON_MODE", getKeyHash(Keys.BUTTON_MODE, KeyType.KEYBOARD));
 		}
 	}
-	
-	static {
-		Console.addCommand("bind", new Command() {
-
-			@Override
-			public String getDescription () {
-				return "Bind a Key to specific command";
-			}
-
-			@Override
-			public void execute (String[] args) {
-				if (args.length < 3) {
-					printHelp();
-					return;
-				}
-
-				Integer keyHash = keys.get(args[1].toUpperCase());
-
-				if (keyHash == null) {
-					Console.out.println("Error: Invalid KeyCode.");
-					return;
-				}
-
-				Command cmd = Console.getCommand(args[2]);
-
-				if (cmd == null) {
-					Console.out.println("Error: Command \"" + args[2] + "\" doesn't exist.");
-					Console.out.println("Type \"list\" for showing all available commands.");
-					return;
-				}
-
-				bindings.put(keyHash, new Binding(args[2], cmd));
-			}
-
-			private void printHelp () {
-				Console.out.println(getDescription());
-				Console.out.println("Usage:");
-				Console.out.println("\tbind [keycode] [command]");
-				Console.out.println("Example:");
-				Console.out.println("\tbind SPACE jump");
-			}
-		});
-	}
 
 	public enum KeyType {
 		KEYBOARD(1000), MOUSE(2000), CONTROLLER(3000);
@@ -369,7 +363,7 @@ public final class InputManager implements Input {
 		int keyCode;
 	}
 
-	private static class Binding {
+	private class Binding {
 		public Command command;
 		public String name;
 

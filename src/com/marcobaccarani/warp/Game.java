@@ -8,12 +8,14 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 public abstract class Game implements ApplicationListener {
 	private ConsoleGUI console;
 	private Scene scene;
-
+	
 	public abstract void initialize ();
-
+	
 	@Override
 	public final void create () {
-		// TODO: procedura inizializzazione warp engine
+		EngineCommands.init();
+		WarpEngine.init();
+		
 		TextField.keyRepeatInitialTime = 0.4f;
 		TextField.keyRepeatTime = 0.05f;
 		

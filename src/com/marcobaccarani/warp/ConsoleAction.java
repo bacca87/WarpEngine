@@ -1,6 +1,7 @@
 
 package com.marcobaccarani.warp;
 
+
 public class ConsoleAction {
 	public static final String KEYDOWN = "1";
 	public static final String KEYUP = "0";

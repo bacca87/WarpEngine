@@ -1,5 +1,6 @@
 package com.marcobaccarani.warp;
 
+
 public class ConsoleFloat implements ConsoleVariable {
 	private float value;
 

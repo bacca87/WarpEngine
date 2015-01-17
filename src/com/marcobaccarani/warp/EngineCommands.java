@@ -4,7 +4,6 @@ package com.marcobaccarani.warp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics.DisplayMode;
 
@@ -14,8 +13,10 @@ class EngineCommands {
 	static final ConsoleCommand echo = new ConsoleCommand("echo", "Echo text to console");
 	static final ConsoleCommand r_vsync = new ConsoleCommand("r_vsync", "Enable/Disable vertical sync");
 	static final ConsoleCommand r_displaymode = new ConsoleCommand("r_displaymode", "Set the display mode");
+	static final ConsoleCommand bind = new ConsoleCommand("bind", "Bind a Key to specific command");
+	static final ConsoleCommand clear = new ConsoleCommand("clear", "Clear the console output");
 
-	static {
+	public static void init () {
 		quit.setListener(new CommandListener() {
 			@Override
 			public void execute (String[] args) {
