@@ -5,6 +5,7 @@ import java.util.HashMap;
 
 import com.badlogic.gdx.Application.ApplicationType;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
@@ -15,11 +16,16 @@ import com.badlogic.gdx.controllers.ControllerListener;
 import com.badlogic.gdx.controllers.Controllers;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntMap;
+import com.badlogic.gdx.utils.IntMap.Entry;
 import com.badlogic.gdx.utils.Pool;
+import com.marcobaccarani.warp.console.Command;
+import com.marcobaccarani.warp.console.CommandListener;
+import com.marcobaccarani.warp.console.Console;
+import com.marcobaccarani.warp.console.ConsoleAction;
 
-public final class InputManager implements Input {
+final class InputManager implements Input {
 	private HashMap<String, Integer> keys = new HashMap<String, Integer>();
-	private IntMap<Binding> bindings = new IntMap<Binding>();
+	private IntMap<CommandInfo> bindings = new IntMap<CommandInfo>();
 
 	private InputMultiplexer multiplexer = new InputMultiplexer();
 	private Array<InputEvent> events = new Array<InputEvent>();
@@ -98,8 +104,15 @@ public final class InputManager implements Input {
 	private CommandListener bindListener = new CommandListener() {
 		@Override
 		public void execute (String[] args) {
-			if (args.length < 3) {
+			if (args.length < 2) {
 				printHelp();
+				return;
+			}
+
+			if (args[1].equals("list")) {
+				for (Entry<CommandInfo> entry : bindings) {
+					Console.out.println(getKeyNameFromHash(entry.key) + " = " + entry.value.command.getName());
+				}
 				return;
 			}
 
@@ -118,15 +131,65 @@ public final class InputManager implements Input {
 				return;
 			}
 
-			bindings.put(keyHash, new Binding(args[2], cmd));
+			bind(args[1].toUpperCase(), cmd);
 		}
 
 		private void printHelp () {
 			Console.out.println(EngineCommands.bind.getDescription());
 			Console.out.println("Usage:");
-			Console.out.println("\tbind [keycode] [command]");
+			Console.out.println("\tbind [keycode] [command]  - Bind a key");
+			Console.out.println("\tbind list                 - Show all active bindings");
 			Console.out.println("Example:");
 			Console.out.println("\tbind SPACE jump");
+		}
+	};
+
+	private CommandListener unbindListener = new CommandListener() {
+		@Override
+		public void execute (String[] args) {
+			if (args.length < 2) {
+				printHelp();
+				return;
+			}
+
+			switch (args[1]) {
+			case "key":
+				Integer keyHash = keys.get(args[2].toUpperCase());
+
+				if (keyHash == null) {
+					Console.out.println("Error: Invalid KeyCode.");
+					return;
+				}
+
+				unbindKey(args[2].toUpperCase());
+				break;
+			case "cmd":
+				Command cmd = Console.getCommand(args[2]);
+
+				if (cmd == null) {
+					Console.out.println("Error: Command \"" + args[2] + "\" doesn't exist.");
+					Console.out.println("Type \"list\" for showing all available commands.");
+					return;
+				}
+
+				unbindCommand(cmd);
+				break;
+			case "all":
+				unbindAll();
+				break;
+			default:
+				printHelp();
+			}
+		}
+
+		private void printHelp () {
+			Console.out.println(EngineCommands.unbind.getDescription());
+			Console.out.println("Usage:");
+			Console.out.println("\tunbind key [keycode]  - Unbind key");
+			Console.out.println("\tunbind cmd [command]  - Unbind command");
+			Console.out.println("\tunbind all            - Unbind all");
+			Console.out.println("Example:");
+			Console.out.println("\tunbind cmd jump");
 		}
 	};
 
@@ -138,6 +201,7 @@ public final class InputManager implements Input {
 		addInputProcessor(inputListener);
 
 		EngineCommands.bind.setListener(bindListener);
+		EngineCommands.unbind.setListener(unbindListener);
 	}
 
 	void update () {
@@ -145,21 +209,21 @@ public final class InputManager implements Input {
 	}
 
 	private void processEvents () {
-		Binding binding = null;
+		CommandInfo cmdInfo = null;
 
 		for (InputEvent event : events) {
-			binding = bindings.get(getKeyHash(event.keyCode, event.type));
+			cmdInfo = bindings.get(getKeyHash(event.keyCode, event.type));
 
-			if (binding != null) {
+			if (cmdInfo != null) {
 				switch (event.state) {
 				case KEY_DOWN:
-					if (binding.isAction)
-						Console.executeCommand(binding.command, binding.name, ConsoleAction.KEYDOWN);
+					if (cmdInfo.isAction)
+						Console.executeCommand(cmdInfo.command, cmdInfo.command.getName(), ConsoleAction.KEYDOWN);
 					else
-						Console.executeCommand(binding.command, binding.name);
+						Console.executeCommand(cmdInfo.command, cmdInfo.command.getName());
 					break;
 				case KEY_UP:
-					if (binding.isAction) Console.executeCommand(binding.command, binding.name, ConsoleAction.KEYUP);
+					if (cmdInfo.isAction) Console.executeCommand(cmdInfo.command, cmdInfo.command.getName(), ConsoleAction.KEYUP);
 					break;
 				}
 			}
@@ -168,6 +232,52 @@ public final class InputManager implements Input {
 		}
 
 		events.clear();
+	}
+
+	@Override
+	public void bind (String keyName, Command command) {
+		if (keyName == null) {
+			throw new IllegalArgumentException("The keyName can't be null!");
+		}
+
+		if (command == null) {
+			throw new IllegalArgumentException("The command can't be null!");
+		}
+
+		Integer keyHash = keys.get(keyName.toUpperCase());
+
+		if (keyHash == null) {
+			throw new IllegalArgumentException("The key " + keyName + " doesn't exist!");
+		}
+
+		bindings.put(keyHash, new CommandInfo(command));
+	}
+
+	@Override
+	public void unbindKey (String keyName) {
+		if (keyName == null) {
+			throw new IllegalArgumentException("The keyName can't be null!");
+		}
+
+		Integer keyHash = keys.get(keyName.toUpperCase());
+
+		if (keyHash == null) {
+			throw new IllegalArgumentException("The key " + keyName + " doesn't exist!");
+		}
+
+		bindings.remove(keyHash);
+	}
+
+	@Override
+	public void unbindCommand (Command command) {
+		for (Entry<CommandInfo> entry : bindings) {
+			if (entry.value.command.getName().equals(command.getName())) bindings.remove(entry.key);
+		}
+	}
+
+	@Override
+	public void unbindAll () {
+		bindings.clear();
 	}
 
 	@Override
@@ -194,7 +304,21 @@ public final class InputManager implements Input {
 		return keyCode + type.hashCode();
 	}
 
+	private String getKeyNameFromHash (int keyHash) {
+		for (java.util.Map.Entry<String, Integer> entry : keys.entrySet()) {
+			if (entry.getValue().equals(keyHash)) return entry.getKey();
+		}
+
+		return null;
+	}
+
 	private void initKeys () {
+		keys.put("MOUSE_LEFT", getKeyHash(Buttons.LEFT, KeyType.MOUSE));
+		keys.put("MOUSE_RIGHT", getKeyHash(Buttons.RIGHT, KeyType.MOUSE));
+		keys.put("MOUSE_MIDDLE", getKeyHash(Buttons.MIDDLE, KeyType.MOUSE));
+		keys.put("MOUSE_BACK", getKeyHash(Buttons.BACK, KeyType.MOUSE));
+		keys.put("MOUSE_FORWARD", getKeyHash(Buttons.FORWARD, KeyType.MOUSE));
+
 		keys.put("0", getKeyHash(Keys.NUM_0, KeyType.KEYBOARD));
 		keys.put("1", getKeyHash(Keys.NUM_1, KeyType.KEYBOARD));
 		keys.put("2", getKeyHash(Keys.NUM_2, KeyType.KEYBOARD));
@@ -363,16 +487,13 @@ public final class InputManager implements Input {
 		int keyCode;
 	}
 
-	private class Binding {
+	private class CommandInfo {
 		public Command command;
-		public String name;
-
 		public boolean isAction;
 
-		public Binding (String name, Command command) {
+		public CommandInfo (Command command) {
 			this.command = command;
-			this.name = name;
-			this.isAction = command instanceof Action;
+			this.isAction = command instanceof ConsoleAction;
 		}
 	}
 }

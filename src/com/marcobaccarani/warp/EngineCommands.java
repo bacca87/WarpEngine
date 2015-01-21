@@ -4,17 +4,22 @@ package com.marcobaccarani.warp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics.DisplayMode;
+import com.marcobaccarani.warp.console.CommandListener;
+import com.marcobaccarani.warp.console.Console;
+import com.marcobaccarani.warp.console.ConsoleCommand;
 
-class EngineCommands {
-	static final ConsoleCommand list = new ConsoleCommand("list", "Show all available commands");
-	static final ConsoleCommand quit = new ConsoleCommand("quit", "Exit the game");
-	static final ConsoleCommand echo = new ConsoleCommand("echo", "Echo text to console");
-	static final ConsoleCommand r_vsync = new ConsoleCommand("r_vsync", "Enable/Disable vertical sync");
-	static final ConsoleCommand r_displaymode = new ConsoleCommand("r_displaymode", "Set the display mode");
-	static final ConsoleCommand bind = new ConsoleCommand("bind", "Bind a Key to specific command");
-	static final ConsoleCommand clear = new ConsoleCommand("clear", "Clear the console output");
+public class EngineCommands {
+	public static final ConsoleCommand list = new ConsoleCommand("list", "Show all available commands");
+	public static final ConsoleCommand quit = new ConsoleCommand("quit", "Exit the game");
+	public static final ConsoleCommand echo = new ConsoleCommand("echo", "Echo text to console");
+	public static final ConsoleCommand r_vsync = new ConsoleCommand("r_vsync", "Enable/Disable vertical sync");
+	public static final ConsoleCommand r_displaymode = new ConsoleCommand("r_displaymode", "Set the display mode");
+	public static final ConsoleCommand bind = new ConsoleCommand("bind", "Bind a Key to specific command");
+	public static final ConsoleCommand unbind = new ConsoleCommand("unbind", "Unbind specific key or command");
+	public static final ConsoleCommand clear = new ConsoleCommand("clear", "Clear the console output");
 
 	public static void init () {
 		quit.setListener(new CommandListener() {

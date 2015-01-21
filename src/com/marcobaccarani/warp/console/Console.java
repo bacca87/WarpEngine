@@ -1,5 +1,5 @@
 
-package com.marcobaccarani.warp;
+package com.marcobaccarani.warp.console;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -13,6 +13,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.badlogic.gdx.Gdx;
+import com.marcobaccarani.warp.EngineCommands;
 
 public final class Console {
 	private static final OutputStream stdOut = new OutputStream() {
@@ -58,16 +59,16 @@ public final class Console {
 	Console () {
 	}
 
-	static void addCommand (final String name, Command command) {
-		if (name == null) throw new IllegalArgumentException("The command name can't be null!");
-		if (name.length() > COMMAND_MAX_LENGHT) throw new IllegalArgumentException("The command name must be maximum 30 char long!");
-		if (commands.containsKey(name)) throw new IllegalArgumentException("Command \"" + name + "\" already exist!");
+	public static void addCommand (Command command) {
 		if (command == null) throw new IllegalArgumentException("The command can't be null!");
+		if (command.getName() == null) throw new IllegalArgumentException("The command name can't be null!");
+		if (command.getName().length() > COMMAND_MAX_LENGHT) throw new IllegalArgumentException("The command name must be maximum 30 char long!");
+		if (commands.containsKey(command.getName())) throw new IllegalArgumentException("Command \"" + command.getName() + "\" already exist!");
 
-		commands.put(name, command);
+		commands.put(command.getName(), command);
 	}
 
-	static void executeCommand (final String command) {
+	public static void executeCommand (final String command) {
 		ArrayList<String> arglist = new ArrayList<String>();
 		String args[];
 
@@ -92,7 +93,7 @@ public final class Console {
 		}
 	}
 
-	static void executeCommand (Command command, String... args) {
+	public static void executeCommand (Command command, String... args) {
 		if (command == null) throw new IllegalArgumentException("The command can't be null!");
 
 		try {
@@ -102,7 +103,7 @@ public final class Console {
 		}
 	}
 
-	static Command getCommand (String name) {
+	public static Command getCommand (String name) {
 		return commands.get(name);
 	}
 }

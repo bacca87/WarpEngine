@@ -1,5 +1,5 @@
 
-package com.marcobaccarani.warp;
+package com.marcobaccarani.warp.console;
 
 public interface ActionListener {
 	public void keyDown ();

@@ -4,21 +4,22 @@ package com.marcobaccarani.warp;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
+import com.marcobaccarani.warp.console.ConsoleGUI;
 
 public abstract class Game implements ApplicationListener {
 	private ConsoleGUI console;
 	private Scene scene;
-	
+
 	public abstract void initialize ();
-	
+
 	@Override
 	public final void create () {
 		EngineCommands.init();
 		WarpEngine.init();
-		
+
 		TextField.keyRepeatInitialTime = 0.4f;
 		TextField.keyRepeatTime = 0.05f;
-		
+
 		console = new ConsoleGUI();
 
 		initialize();
@@ -42,7 +43,7 @@ public abstract class Game implements ApplicationListener {
 
 	@Override
 	public void render () {
-		((InputManager) WarpEngine.input).update();
+		((InputManager)WarpEngine.input).update();
 		if (scene != null) scene.render(Gdx.graphics.getDeltaTime());
 		console.render();
 	}
@@ -53,8 +54,8 @@ public abstract class Game implements ApplicationListener {
 		console.resize(width, height);
 	}
 
-	/** Sets the current screen. {@link Scene#hide()} is called on any old screen, and {@link Scene#show()} is called on the
-	 * new screen, if any.
+	/** Sets the current screen. {@link Scene#hide()} is called on any old screen, and {@link Scene#show()} is called on the new
+	 * screen, if any.
 	 * @param screen may be {@code null} */
 	public void setScene (Scene gameScreen) {
 		if (scene != null) {

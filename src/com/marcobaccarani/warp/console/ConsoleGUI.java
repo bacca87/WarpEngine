@@ -1,5 +1,5 @@
 
-package com.marcobaccarani.warp;
+package com.marcobaccarani.warp.console;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -20,8 +20,10 @@ import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.Timer.Task;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.marcobaccarani.warp.EngineCommands;
+import com.marcobaccarani.warp.WarpEngine;
 
-class ConsoleGUI implements TextFieldFilter, Disposable {
+public class ConsoleGUI implements TextFieldFilter, Disposable {
 	private Stage stage;
 
 	private boolean show;
@@ -90,7 +92,7 @@ class ConsoleGUI implements TextFieldFilter, Disposable {
 		}
 	};
 	
-	ConsoleGUI () {
+	public ConsoleGUI () {
 		show = false;
 		stage = new Stage(new ScreenViewport());
 		WarpEngine.input.addInputProcessor(stage);
