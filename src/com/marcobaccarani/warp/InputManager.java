@@ -24,11 +24,15 @@ import com.marcobaccarani.warp.console.Console;
 import com.marcobaccarani.warp.console.ConsoleAction;
 
 final class InputManager implements Input {
+	private final int MOUSE_WHEELUP = 5000;
+	private final int MOUSE_WHEELDOWN = 5001;
+	
 	private HashMap<String, Integer> keys = new HashMap<String, Integer>();
 	private IntMap<CommandInfo> bindings = new IntMap<CommandInfo>();
 
 	private InputMultiplexer multiplexer = new InputMultiplexer();
 	private Array<InputEvent> events = new Array<InputEvent>();
+	private Array<InputEvent> singleStateEvents = new Array<InputEvent>();
 
 	private Pool<InputEvent> eventsPool = new Pool<InputEvent>(16, 1000) {
 		@Override
@@ -44,6 +48,7 @@ final class InputManager implements Input {
 			event.type = KeyType.KEYBOARD;
 			event.state = KeyState.KEY_DOWN;
 			event.keyCode = keycode;
+			event.isSingleState = false;
 			events.add(event);
 			return false;
 		}
@@ -54,6 +59,7 @@ final class InputManager implements Input {
 			event.type = KeyType.KEYBOARD;
 			event.state = KeyState.KEY_UP;
 			event.keyCode = keycode;
+			event.isSingleState = false;
 			events.add(event);
 			return false;
 		}
@@ -64,6 +70,7 @@ final class InputManager implements Input {
 			event.type = KeyType.MOUSE;
 			event.state = KeyState.KEY_DOWN;
 			event.keyCode = button;
+			event.isSingleState = false;
 			events.add(event);
 			return false;
 		}
@@ -74,9 +81,21 @@ final class InputManager implements Input {
 			event.type = KeyType.MOUSE;
 			event.state = KeyState.KEY_UP;
 			event.keyCode = button;
+			event.isSingleState = false;
 			events.add(event);
 			return false;
 		}
+		
+		@Override
+		public boolean scrolled(int amount) {
+			InputEvent event = eventsPool.obtain();
+			event.type = KeyType.MOUSE;
+			event.state = KeyState.KEY_DOWN;
+			event.keyCode = amount > 0 ? MOUSE_WHEELUP : MOUSE_WHEELDOWN;
+			event.isSingleState = true;
+			events.add(event);
+			return false;
+		}		
 	};
 
 	private ControllerListener controllerListener = new ControllerAdapter() {
@@ -86,6 +105,7 @@ final class InputManager implements Input {
 			event.type = KeyType.CONTROLLER;
 			event.state = KeyState.KEY_DOWN;
 			event.keyCode = buttonCode;
+			event.isSingleState = false;
 			events.add(event);
 			return false;
 		}
@@ -96,9 +116,15 @@ final class InputManager implements Input {
 			event.type = KeyType.CONTROLLER;
 			event.state = KeyState.KEY_UP;
 			event.keyCode = buttonCode;
+			event.isSingleState = false;
 			events.add(event);
 			return false;
 		}
+		
+		@Override
+		public void connected(Controller controller) {
+			Console.out.println("DIOMERDA " + controller.getName());
+		};
 	};
 
 	private CommandListener bindListener = new CommandListener() {
@@ -227,11 +253,18 @@ final class InputManager implements Input {
 					break;
 				}
 			}
-
-			eventsPool.free(event);
+			
+			if (event.isSingleState && event.state == KeyState.KEY_DOWN) {
+				event.state = KeyState.KEY_UP;
+				singleStateEvents.add(event);
+			} else {
+				eventsPool.free(event);
+			}
 		}
-
+		
 		events.clear();
+		events.addAll(singleStateEvents);
+		singleStateEvents.clear();
 	}
 
 	@Override
@@ -313,12 +346,16 @@ final class InputManager implements Input {
 	}
 
 	private void initKeys () {
+		// MOUSE
 		keys.put("MOUSE_LEFT", getKeyHash(Buttons.LEFT, KeyType.MOUSE));
 		keys.put("MOUSE_RIGHT", getKeyHash(Buttons.RIGHT, KeyType.MOUSE));
 		keys.put("MOUSE_MIDDLE", getKeyHash(Buttons.MIDDLE, KeyType.MOUSE));
 		keys.put("MOUSE_BACK", getKeyHash(Buttons.BACK, KeyType.MOUSE));
 		keys.put("MOUSE_FORWARD", getKeyHash(Buttons.FORWARD, KeyType.MOUSE));
+		keys.put("MOUSE_WHEELUP", getKeyHash(MOUSE_WHEELUP, KeyType.MOUSE));
+		keys.put("MOUSE_WHEELDOWN", getKeyHash(MOUSE_WHEELDOWN, KeyType.MOUSE));
 
+		// KEYBOARD
 		keys.put("0", getKeyHash(Keys.NUM_0, KeyType.KEYBOARD));
 		keys.put("1", getKeyHash(Keys.NUM_1, KeyType.KEYBOARD));
 		keys.put("2", getKeyHash(Keys.NUM_2, KeyType.KEYBOARD));
@@ -416,7 +453,20 @@ final class InputManager implements Input {
 		keys.put("F10", getKeyHash(Keys.F10, KeyType.KEYBOARD));
 		keys.put("F11", getKeyHash(Keys.F11, KeyType.KEYBOARD));
 		keys.put("F12", getKeyHash(Keys.F12, KeyType.KEYBOARD));
+		
+		// XBOX CONTROLLER
+		keys.put("XBOX_A", getKeyHash(XboxControllerMapping.BUTTON_A, KeyType.CONTROLLER));
+		keys.put("XBOX_B", getKeyHash(XboxControllerMapping.BUTTON_B, KeyType.CONTROLLER));
+		keys.put("XBOX_X", getKeyHash(XboxControllerMapping.BUTTON_X, KeyType.CONTROLLER));
+		keys.put("XBOX_Y", getKeyHash(XboxControllerMapping.BUTTON_Y, KeyType.CONTROLLER));
+		keys.put("XBOX_BACK", getKeyHash(XboxControllerMapping.BUTTON_BACK, KeyType.CONTROLLER));
+		keys.put("XBOX_START", getKeyHash(XboxControllerMapping.BUTTON_START, KeyType.CONTROLLER));
+		keys.put("XBOX_LB", getKeyHash(XboxControllerMapping.BUTTON_LB, KeyType.CONTROLLER));
+		keys.put("XBOX_L3", getKeyHash(XboxControllerMapping.BUTTON_L3, KeyType.CONTROLLER));
+		keys.put("XBOX_RB", getKeyHash(XboxControllerMapping.BUTTON_RB, KeyType.CONTROLLER));
+		keys.put("XBOX_R3", getKeyHash(XboxControllerMapping.BUTTON_R3, KeyType.CONTROLLER));
 
+		// ANDROID
 		if (Gdx.app.getType() == ApplicationType.Android) {
 			keys.put("SOFTLEFT", getKeyHash(Keys.SOFT_LEFT, KeyType.KEYBOARD));
 			keys.put("SOFTRIGHT", getKeyHash(Keys.SOFT_RIGHT, KeyType.KEYBOARD));
@@ -484,6 +534,7 @@ final class InputManager implements Input {
 	private class InputEvent {
 		public KeyType type;
 		public KeyState state;
+		public boolean isSingleState;
 		int keyCode;
 	}
 
